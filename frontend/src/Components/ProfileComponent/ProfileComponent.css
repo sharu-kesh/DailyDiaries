@@ -1,0 +1,88 @@
+.ActiveTab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem 1rem;
+    cursor: pointer;
+    color: #262626;
+    font-size: 0.875rem;
+    position: relative;
+    transition: color 0.2s;
+}
+
+.ActiveTabIndicator {
+    position: absolute;
+    bottom: -1px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    height: 2px;
+    background-color: #00376b;
+}
+
+
+.DividerContainer {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    max-width: 600px;
+    border-top: 1px solid #dbdbdb;
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.ContentWrapper {
+    padding: 20px 0 40px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.BlogContainer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+    padding: 0 1rem;
+    width: 80%;
+    max-width: 960px;
+    margin: 0 auto;
+}
+
+.OverlayContent {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    color: white;
+    text-shadow: 0 0 2px rgba(0, 0, 0, 0.7);
+    opacity: 0; 
+    transition: opacity 0.2s ease;
+}
+
+.OverlayBackground {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0); 
+    transition: background-color 0.2s ease;
+}
+
+.Likes {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.Comments {
+    display: flex; 
+    align-items: center;
+    gap: 0.25rem;
+}
