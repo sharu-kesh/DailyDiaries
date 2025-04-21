@@ -149,10 +149,10 @@ const SignupPage = () => {
 
   return (
     <div style={styles.container}>
-      <div style={styles.logo}>BlogName</div>
+      <div style={styles.logo}>DailyDiaries</div>
       
       <div style={styles.formContainer}>
-        <h1 style={styles.header}>Join BlogName.</h1>
+        <h1 style={styles.header}>Join DailyDiaries.</h1>
         <p style={styles.subheader}>
           Create an account to personalize your experience and start publishing your own stories.
         </p>

@@ -141,7 +141,7 @@ const LoginPage = () => {
 
   return (
     <div style={styles.container}>
-      <div style={styles.logo}>BlogName</div>
+      <div style={styles.logo}>DailyDiaries</div>
       
       <div style={styles.formContainer}>
         <h1 style={styles.header}>Welcome back.</h1>
