@@ -1,25 +1,11 @@
-import { AiOutlineHome,AiFillHome,AiOutlineSearch, AiOutlineCompass, AiOutlineMessage, AiOutlineHeart, AiOutlinePlusCircle, AiFillPlusCircle,AiFillMessage,AiFillHeart } from "react-icons/ai";
+import { AiOutlineHome,AiFillHome, AiOutlineHeart, AiOutlinePlusCircle, AiFillPlusCircle,AiFillHeart } from "react-icons/ai";
 import { CgProfile } from "react-icons/cg";
 
 export const menu=[
     {
         title:"Home",
         icon:<AiOutlineHome className="text-2xl mr-5"/>, 
-        activeIcon : <AiFillHome className="text-2xl mr-5"></AiFillHome>},
-    {
-        title:"Search",
-        icon:<AiOutlineSearch className="text-2xl mr-5"/>, 
-        activeIcon:<AiOutlineSearch className="text-2xl mr-5"></AiOutlineSearch>
-    },
-    {
-        title:"Explore", 
-        icon:<AiOutlineCompass className="text-2xl mr-5"/>, 
-        activeIcon:<AiOutlineCompass className="text-2xl mr-5"></AiOutlineCompass>
-    },
-    {
-        title:"Message",
-        icon:<AiOutlineMessage className="text-2xl mr-5"/>,
-        activeIcon:<AiFillMessage className="text-2xl mr-5"></AiFillMessage>
+        activeIcon : <AiFillHome className="text-2xl mr-5"></AiFillHome>
     },
     {
         title:"Notifications",

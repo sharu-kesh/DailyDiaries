@@ -14,6 +14,9 @@ const Sidebar = () => {
     else if(title==="Home"){
       navigate("/");
     }
+    else if(title ==="Create"){
+      navigate("/create")
+    }
   }
   return (
     <div 

@@ -3,7 +3,7 @@ import Sidebar from '../../Components/Sidebar/Sidebar';
 import { Routes, Route } from 'react-router-dom';
 import HomePage from '../HomePage/HomePage';
 import Profile from '../Profile/Profile';
-
+import CreateBlog from '../Create/CreateBlog';
 const Router = () => {
   return (
     <div className="flex h-screen">
@@ -17,6 +17,7 @@ const Router = () => {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/username" element={<Profile />} />
+          <Route path ="/create" element = {<CreateBlog />} />
         </Routes>
       </div>
     </div>
