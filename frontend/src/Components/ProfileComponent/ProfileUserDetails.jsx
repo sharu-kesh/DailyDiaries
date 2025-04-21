@@ -1,7 +1,27 @@
-import React from 'react';
+import React,{useState} from 'react';
 import { TbCircleDashed } from 'react-icons/tb';
+import ProfileEditModal from './ProfileEditModal';
 
 export const ProfileUserDetails = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [userData, setUserData] = useState({
+    username: "instagram_user",
+    bio: "Coffee addict | Photography lover | Hiking enthusiast",
+    profilePicture: "/api/placeholder/150/150" // Replace with your image path
+  });
+
+  const handleEditClick = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = (updatedData) => {
+    setIsModalOpen(false);
+    
+    // If data was passed back, update the user data
+    if (updatedData) {
+      setUserData(updatedData);
+    }
+  };
   return (
     <div style={{ padding: '50px 0 40px 0', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', width: '100%' }}>
       {/* Profile Picture */}
@@ -17,7 +37,7 @@ export const ProfileUserDetails = () => {
       <div style={{ flex: 1, maxWidth: '600px', position: 'relative', zIndex: 2 }}>
         {/* Username, Edit Profile, and Icon */}
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem', justifyContent: 'center' }}>
-          <p style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1F2937', marginRight: '1rem' }}>Username</p>
+          <p style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1F2937', marginRight: '1rem' }}>{userData.username}</p>
           <button
             style={{
               padding: '0.5rem 1rem',
@@ -29,6 +49,7 @@ export const ProfileUserDetails = () => {
             }}
             onMouseOver={(e) => (e.target.style.backgroundColor = '#2563EB')}
             onMouseOut={(e) => (e.target.style.backgroundColor = '#3B82F6')}
+            onClick={handleEditClick}
           >
             Edit Profile
           </button>
@@ -57,10 +78,15 @@ export const ProfileUserDetails = () => {
         {/* Bio */}
         <div style={{ textAlign: 'center' }}>
           <p className='font-semibold' style={{ color: '#4B5563', fontSize: '1rem' }}>
-            Lover of cats 🐱 | Sharing daily adventures | Based in [City] | #CatLife
+            {userData.bio}
           </p>
         </div>
       </div>
+      <ProfileEditModal 
+        isOpen={isModalOpen} 
+        onClose={handleCloseModal} 
+        initialUserData={userData} 
+      />
     </div>
   );
 };

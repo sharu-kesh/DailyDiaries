@@ -5,13 +5,8 @@ export const menu=[
     {
         title:"Home",
         icon:<AiOutlineHome className="text-2xl mr-5"/>, 
-        activeIcon : <AiFillHome className="text-2xl mr-5"></AiFillHome>
-    },
-    {
-        title:"Notifications",
-        icon:<AiOutlineHeart className="text-2xl mr-5"/> , 
-        activeIcon:<AiFillHeart className="text-2xl mr-5"></AiFillHeart>
-    },
+        activeIcon : <AiFillHome className="text-2xl mr-5"></AiFillHome>},
+   
     {
         title:"Create",
         icon:<AiOutlinePlusCircle className="text-2xl mr-5"/>,

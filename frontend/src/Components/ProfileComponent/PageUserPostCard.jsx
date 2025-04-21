@@ -2,6 +2,7 @@ import React from 'react';
 import { AiFillHeart } from 'react-icons/ai';
 import { FaRegCommentAlt } from 'react-icons/fa';
 import './ProfileComponent.css'
+
 const PageUserPostCard = () => {
   return (
     <div

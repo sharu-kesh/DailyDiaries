@@ -86,3 +86,23 @@
     align-items: center;
     gap: 0.25rem;
 }
+
+.outerBox{
+    display: flex;
+    width: 100%;
+    
+
+}
+
+.leftBox{
+    display: flex;
+    flex:2;
+    flex-direction: column;
+    background-color: blue;
+}
+.rightBox{
+    display: flex;
+    flex:1;
+    background-color: red;
+    
+}
