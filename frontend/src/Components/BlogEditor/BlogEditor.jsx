@@ -1,4 +1,5 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
+import axios from 'axios';
 import { FaBold, FaItalic, FaListUl, FaListOl, FaHeading, FaImage, FaVideo, FaLink, FaAlignLeft, FaAlignCenter, FaAlignRight, FaAlignJustify } from 'react-icons/fa';
 import './BlogEditor.css';
 
@@ -7,33 +8,86 @@ function BlogEditor() {
   const titleImageInputRef = useRef(null);
   const contentImageInputRef = useRef(null);
 
-  const handleTitleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
+  // Load from localStorage on mount
+  useEffect(() => {
+    const savedBlog = localStorage.getItem('blogDraft');
+    if (savedBlog) {
+      const { title, subheading, titleImage, content } = JSON.parse(savedBlog);
+      document.getElementById('title').value = title || '';
+      document.getElementById('subheading').value = subheading || '';
+      if (titleImage) {
         const img = document.createElement('img');
-        img.src = event.target.result;
+        img.src = titleImage;
         img.style.maxWidth = '100px';
         img.style.maxHeight = '100px';
         img.style.objectFit = 'cover';
         img.style.borderRadius = '4px';
         document.querySelector('.preview-title-image').innerHTML = '';
         document.querySelector('.preview-title-image').appendChild(img);
+      }
+      if (content) {
+        editorRef.current.innerHTML = content;
+      }
+    }
+  }, []);
+
+  const saveToLocalStorage = (title, subheading, titleImage, content) => {
+    const blogDraft = { title, subheading, titleImage, content };
+    localStorage.setItem('blogDraft', JSON.stringify(blogDraft));
+  };
+
+  const resizeImage = (file, maxWidth = 800, quality = 0.8) => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth) {
+          height *= maxWidth / width;
+          width = maxWidth;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Convert to base64 with compression
+        const resizedBase64 = canvas.toDataURL('image/jpeg', quality);
+        resolve(resizedBase64);
       };
-      reader.readAsDataURL(file);
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
+  const handleTitleImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const resizedBase64 = await resizeImage(file);
+      const img = document.createElement('img');
+      img.src = resizedBase64;
+      img.style.maxWidth = '100px';
+      img.style.maxHeight = '100px';
+      img.style.objectFit = 'cover';
+      img.style.borderRadius = '4px';
+      document.querySelector('.preview-title-image').innerHTML = '';
+      document.querySelector('.preview-title-image').appendChild(img);
+
+      const title = document.getElementById('title').value;
+      const subheading = document.getElementById('subheading').value;
+      const content = editorRef.current.innerHTML;
+      saveToLocalStorage(title, subheading, resizedBase64, content);
     }
   };
 
-  const handleContentImageChange = (e) => {
+  const handleContentImageChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const img = `<img src="${event.target.result}" style="max-width: 100%; margin: 8px 0;" alt="Uploaded image" />`;
-        insertAtCursor(img);
-      };
-      reader.readAsDataURL(file);
+      const resizedBase64 = await resizeImage(file);
+      const img = `<img src="${resizedBase64}" style="max-width: 100%; margin: 8px 0;" alt="Uploaded image" />`;
+      insertAtCursor(img);
     }
   };
 
@@ -48,7 +102,7 @@ function BlogEditor() {
     } else {
       range = document.createRange();
       range.selectNodeContents(editor);
-      range.collapse(false); // Collapse to the end
+      range.collapse(false);
       selection.removeAllRanges();
       selection.addRange(range);
     }
@@ -56,29 +110,49 @@ function BlogEditor() {
     const fragment = range.createContextualFragment(html);
     range.insertNode(fragment);
 
-    // Safely move cursor after the inserted content
     const lastNode = fragment.lastChild || fragment;
     if (lastNode && lastNode.nodeType === Node.ELEMENT_NODE) {
       range.setStartAfter(lastNode);
       range.setEndAfter(lastNode);
     } else {
-      range.collapse(false); // Move to the end if no valid last child
+      range.collapse(false);
     }
     selection.removeAllRanges();
     selection.addRange(range);
 
     editor.focus();
+
+    // Save to localStorage after content update
+    const title = document.getElementById('title').value;
+    const subheading = document.getElementById('subheading').value;
+    const titleImage = document.querySelector('.preview-title-image').innerHTML ? document.querySelector('.preview-title-image img').src : null;
+    const content = editorRef.current.innerHTML;
+    saveToLocalStorage(title, subheading, titleImage, content);
   };
 
   const execCommand = (command, value = null) => {
     document.execCommand(command, false, value);
     editorRef.current.focus();
+
+    // Save to localStorage after formatting
+    const title = document.getElementById('title').value;
+    const subheading = document.getElementById('subheading').value;
+    const titleImage = document.querySelector('.preview-title-image').innerHTML ? document.querySelector('.preview-title-image img').src : null;
+    const content = editorRef.current.innerHTML;
+    saveToLocalStorage(title, subheading, titleImage, content);
   };
 
   const handleHeading = (level) => {
     const newTag = level === 'paragraph' ? 'p' : level;
     document.execCommand('formatBlock', false, newTag);
     editorRef.current.focus();
+
+    // Save to localStorage after heading change
+    const title = document.getElementById('title').value;
+    const subheading = document.getElementById('subheading').value;
+    const titleImage = document.querySelector('.preview-title-image').innerHTML ? document.querySelector('.preview-title-image img').src : null;
+    const content = editorRef.current.innerHTML;
+    saveToLocalStorage(title, subheading, titleImage, content);
   };
 
   const insertVideo = () => {
@@ -144,13 +218,31 @@ function BlogEditor() {
     previewWindow.document.close();
   };
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     const title = document.getElementById('title').value;
     const subheading = document.getElementById('subheading').value;
     const content = editorRef.current.innerHTML;
-    const titleImage = document.querySelector('.preview-title-image').innerHTML;
-    console.log('Creating blog:', { title, subheading, titleImage, content });
-    alert('Blog created successfully! (Placeholder action)');
+    const titleImage = document.querySelector('.preview-title-image').innerHTML ? document.querySelector('.preview-title-image img').src : null;
+
+    const blogData = { title, subheading, titleImage, content };
+
+    try {
+      const response = await axios.post('http://localhost:8080/api/blogs', blogData);
+      console.log('Blog created:', response.data);
+      alert('Blog created successfully!');
+      localStorage.removeItem('blogDraft'); // Clear draft after successful creation
+    } catch (error) {
+      console.error('Error creating blog:', error);
+      alert('Failed to create blog');
+    }
+  };
+
+  const handleInputChange = () => {
+    const title = document.getElementById('title').value;
+    const subheading = document.getElementById('subheading').value;
+    const titleImage = document.querySelector('.preview-title-image').innerHTML ? document.querySelector('.preview-title-image img').src : null;
+    const content = editorRef.current.innerHTML;
+    saveToLocalStorage(title, subheading, titleImage, content);
   };
 
   return (
@@ -192,6 +284,7 @@ function BlogEditor() {
                   borderRadius: '4px',
                   fontSize: '16px',
                 }}
+                onChange={handleInputChange}
               />
             </div>
             <div style={{ flexShrink: 0 }}>
@@ -241,6 +334,7 @@ function BlogEditor() {
               borderRadius: '4px',
               fontSize: '16px',
             }}
+            onChange={handleInputChange}
           />
         </div>
         <div>
@@ -324,6 +418,7 @@ function BlogEditor() {
                 outline: 'none',
                 textAlign: 'left',
               }}
+              onInput={handleInputChange}
             />
           </div>
         </div>
