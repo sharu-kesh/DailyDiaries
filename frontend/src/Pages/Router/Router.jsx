@@ -6,6 +6,8 @@ import Profile from '../Profile/Profile';
 import CreateBlog from '../Create/CreateBlog';
 import Login from '../../Components/Auth/Login';
 import SignupPage from '../../Components/Auth/Signup';
+import { mockArticles } from '../HomePage/mockData';
+import ArticleDetail from '../HomePage/ArticleDetail';
 
 // Layout component for routes with sidebar
 const MainLayout = () => (
@@ -22,6 +24,9 @@ const MainLayout = () => (
 );
 
 const Router = () => {
+ 
+
+  
   return (
     <Routes>
       {/* Routes with Sidebar */}
@@ -31,6 +36,8 @@ const Router = () => {
         <Route path="/" element={<HomePage />} />
         <Route path="/username" element={<Profile />} />
         <Route path="/create" element={<CreateBlog />} />
+        {/* <Route path="/" element={<BlogFeed articles={mockArticles}  />} /> */}
+        <Route path="/article/:articleId" element={<ArticleDetail articles={mockArticles} />} />
       </Route>
       {/* Routes without Sidebar */}
       <Route path="/login" element={<Login />} />

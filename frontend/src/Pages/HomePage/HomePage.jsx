@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './HomePage.css';
+import { useNavigate } from 'react-router-dom';
 
 // Mock data for demonstration
 const mockArticles = [
@@ -58,6 +59,43 @@ const mockArticles = [
   }
 ];
 
+// Generate more mock data for demonstration
+const generateMoreArticles = (startId, count) => {
+  const topics = ["Machine Learning", "Web Development", "Career Advice", "Programming", "AI", "Data Science"];
+  const authors = ["Maya Wilson", "Alex Rodriguez", "Sanjay Patel", "Emma Chen", "Ibrahim Ahmed", "Sophia Park"];
+  const publications = ["Tech Insights", "Dev Daily", "AI Now", "Code Masters", "Future Tech", "Developer's Journal"];
+  
+  return Array(count).fill().map((_, index) => {
+    const id = startId + index;
+    const likesCount = Math.floor(Math.random() * 2000) + 100;
+    const commentsCount = Math.floor(Math.random() * 50) + 1;
+    const topic = topics[Math.floor(Math.random() * topics.length)];
+    const author = authors[Math.floor(Math.random() * authors.length)];
+    const publication = publications[Math.floor(Math.random() * publications.length)];
+    
+    return {
+      id,
+      title: `${topic} Insights: The Future of ${topic} in 2025`,
+      subtitle: `Exploring the latest advancements and trends in ${topic.toLowerCase()} that are shaping the industry.`,
+      author,
+      publication,
+      date: `Apr ${Math.floor(Math.random() * 20) + 1}`,
+      readingTime: `${Math.floor(Math.random() * 10) + 3} min read`,
+      likes: likesCount > 1000 ? `${(likesCount / 1000).toFixed(1)}K` : likesCount.toString(),
+      likesCount,
+      comments: commentsCount,
+      commentsList: Array(Math.min(commentsCount, 3)).fill().map((_, i) => ({
+        id: i + 1,
+        author: authors[Math.floor(Math.random() * authors.length)],
+        text: `This is a great article about ${topic.toLowerCase()}. I've learned so much!`,
+        date: `Apr ${Math.floor(Math.random() * 20) + 1}`
+      })),
+      image: "https://placeholder.com/300x200",
+      verified: Math.random() > 0.7
+    };
+  });
+};
+
 const staffPicks = [
   {
     id: 1,
@@ -86,6 +124,7 @@ const staffPicks = [
 const recommendedTopics = ["Writing", "Cryptocurrency", "Politics", "Relationships", "Business", "Psychology", "Health"];
 
 const BlogFeed = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('for-you');
   const [articles, setArticles] = useState([]);
   const [userLikes, setUserLikes] = useState({});
@@ -96,9 +135,20 @@ const BlogFeed = () => {
     name: "Current User",
     avatar: "https://placeholder.com/40x40"
   });
+  const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  
+  // Reference for intersection observer
+  const observer = useRef();
+  const loadingRef = useRef(null);
 
+  const handleArticleClick = (articleId) => {
+    navigate(`/article/${articleId}`);
+  };
+  
+  // Fetch initial data
   useEffect(() => {
-    // In a real app, you would fetch data from an API here
     setArticles(mockArticles);
     
     // Initialize states for user interactions
@@ -120,8 +170,79 @@ const BlogFeed = () => {
     setShowCommentSections(initialCommentSections);
   }, []);
 
+  // Function to load more data
+  const loadMoreArticles = useCallback(async () => {
+    if (loading || !hasMore) return;
+    
+    setLoading(true);
+    
+    try {
+      // Simulate API call with setTimeout
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Generate new mock articles
+      const newArticles = generateMoreArticles(articles.length + 1, 3);
+      
+      if (newArticles.length === 0) {
+        setHasMore(false);
+      } else {
+        setArticles(prevArticles => [...prevArticles, ...newArticles]);
+        
+        // Initialize states for new articles
+        const newLikes = { ...userLikes };
+        const newBookmarks = { ...userBookmarks };
+        const newCommentInputs = { ...commentInputs };
+        const newCommentSections = { ...showCommentSections };
+        
+        newArticles.forEach(article => {
+          newLikes[article.id] = false;
+          newBookmarks[article.id] = false;
+          newCommentInputs[article.id] = '';
+          newCommentSections[article.id] = false;
+        });
+        
+        setUserLikes(newLikes);
+        setUserBookmarks(newBookmarks);
+        setCommentInputs(newCommentInputs);
+        setShowCommentSections(newCommentSections);
+        
+        setPage(prevPage => prevPage + 1);
+      }
+    } catch (error) {
+      console.error("Error loading more articles:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [articles.length, loading, hasMore, userLikes, userBookmarks, commentInputs, showCommentSections]);
+
+  // Set up intersection observer for infinite scroll
+  useEffect(() => {
+    const currentObserver = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && !loading) {
+          loadMoreArticles();
+        }
+      },
+      { threshold: 0.1 }
+    );
+    
+    if (loadingRef.current) {
+      currentObserver.observe(loadingRef.current);
+    }
+    
+    return () => {
+      if (loadingRef.current) {
+        currentObserver.unobserve(loadingRef.current);
+      }
+    };
+  }, [loadMoreArticles, loading]);
+
   const handleTabClick = (tab) => {
     setActiveTab(tab);
+    // In a real application, you would fetch different data based on the selected tab
+    setArticles(mockArticles);
+    setPage(1);
+    setHasMore(true);
   };
 
   const toggleLike = (articleId) => {
@@ -235,7 +356,8 @@ const BlogFeed = () => {
         <div className="articles-container">
           {articles.map(article => (
             <article className="article-card" key={article.id}>
-              <div className="article-content">
+              <div className="article-content"
+              onClick={() => handleArticleClick(article.id)}>
                 <div className="article-author">
                   <div className="author-image-container">
                     <div className="author-avatar"></div>
@@ -254,7 +376,7 @@ const BlogFeed = () => {
                     <div className="article-meta">
                       <span className="article-date">{article.date}</span>
                       <span className="article-reading-time">{article.readingTime}</span>
-                      <span className="article-likes">{article.likes}</span>
+                      <span className="article-likes" >{article.likes}</span>
                       <span className="article-comments">{article.comments}</span>
                     </div>
                   </div>
@@ -264,7 +386,7 @@ const BlogFeed = () => {
                   </div>
                 </div>
                 
-                <div className="article-actions">
+                <div className="article-actions" onClick={(e) => e.stopPropagation()}>
                   <button 
                     className={`action-button ${userLikes[article.id] ? 'active' : ''}`}
                     onClick={() => toggleLike(article.id)}
@@ -344,6 +466,36 @@ const BlogFeed = () => {
               </div>
             </article>
           ))}
+          
+          {/* Loading indicator */}
+          {hasMore && (
+            <div className="loading-container" ref={loadingRef}>
+              {loading ? (
+                <div className="loading-spinner">
+                  <div className="spinner"></div>
+                  <p>Loading more articles...</p>
+                </div>
+              ) : (
+                <div className="loading-trigger"></div>
+              )}
+            </div>
+          )}
+          
+          {!hasMore && articles.length > 0 && (
+            <div className="end-of-feed">
+              <p>You've reached the end of your feed</p>
+              <button 
+                className="refresh-feed-button"
+                onClick={() => {
+                  setPage(1);
+                  setArticles(mockArticles);
+                  setHasMore(true);
+                }}
+              >
+                Refresh Feed
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
