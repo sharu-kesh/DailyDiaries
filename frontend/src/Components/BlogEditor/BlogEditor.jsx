@@ -1,42 +1,94 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import axios from 'axios';
-import { FaBold, FaItalic, FaListUl, FaListOl, FaHeading, FaImage, FaVideo, FaLink, FaAlignLeft, FaAlignCenter, FaAlignRight, FaAlignJustify } from 'react-icons/fa';
+import { 
+  FaBold, FaItalic, FaListUl, FaListOl, FaQuoteRight, 
+  FaImage, FaVideo, FaLink, FaUndo, FaRedo, FaEllipsisH,
+  FaPalette 
+} from 'react-icons/fa';
+import { MdFormatSize } from 'react-icons/md';
 import './BlogEditor.css';
 
 function BlogEditor() {
   const editorRef = useRef(null);
   const titleImageInputRef = useRef(null);
   const contentImageInputRef = useRef(null);
+  const [showHeadingOptions, setShowHeadingOptions] = useState(false);
+  const [showColorOptions, setShowColorOptions] = useState(false);
+  const [readTime, setReadTime] = useState("0 min read");
+  const [wordCount, setWordCount] = useState(0);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
+
+  // Common colors for text
+  const colorOptions = [
+    { name: 'Black', value: '#000000' },
+    { name: 'Dark Gray', value: '#333333' },
+    { name: 'Gray', value: '#666666' },
+    { name: 'Light Gray', value: '#999999' },
+    { name: 'Red', value: '#FF0000' },
+    { name: 'Blue', value: '#0000FF' },
+    { name: 'Green', value: '#008000' },
+    { name: 'Purple', value: '#800080' },
+    { name: 'Orange', value: '#FFA500' },
+  ];
 
   // Load from localStorage on mount
   useEffect(() => {
     const savedBlog = localStorage.getItem('blogDraft');
     if (savedBlog) {
-      const { title, subheading, titleImage, content } = JSON.parse(savedBlog);
+      const { title, subtitle, titleImage, content } = JSON.parse(savedBlog);
       document.getElementById('title').value = title || '';
-      document.getElementById('subheading').value = subheading || '';
+      document.getElementById('subtitle').value = subtitle || '';
       if (titleImage) {
-        const img = document.createElement('img');
-        img.src = titleImage;
-        img.style.maxWidth = '100px';
-        img.style.maxHeight = '100px';
-        img.style.objectFit = 'cover';
-        img.style.borderRadius = '4px';
-        document.querySelector('.preview-title-image').innerHTML = '';
-        document.querySelector('.preview-title-image').appendChild(img);
+        updateHeroImage(titleImage);
       }
       if (content) {
         editorRef.current.innerHTML = content;
+        updateWordCountAndReadTime(content);
       }
     }
   }, []);
 
-  const saveToLocalStorage = (title, subheading, titleImage, content) => {
-    const blogDraft = { title, subheading, titleImage, content };
+  // Add click outside handler to close dropdowns
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showHeadingOptions && !event.target.closest('.medium-toolbar-dropdown')) {
+        setShowHeadingOptions(false);
+      }
+      if (showColorOptions && !event.target.closest('.color-dropdown')) {
+        setShowColorOptions(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showHeadingOptions, showColorOptions]);
+
+  const updateWordCountAndReadTime = (content) => {
+    const text = content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+    const words = text.split(' ').filter(word => word.length > 0);
+    const count = words.length;
+    
+    setWordCount(count);
+    const minutes = Math.ceil(count / 200);
+    setReadTime(`${minutes} min read`);
+  };
+
+  const updateHeroImage = (imageUrl) => {
+    const heroContainer = document.querySelector('.hero-image-container');
+    heroContainer.style.backgroundImage = `url(${imageUrl})`;
+    heroContainer.style.height = '400px';
+    heroContainer.classList.add('has-image');
+  };
+
+  const saveToLocalStorage = (title, subtitle, titleImage, content) => {
+    const blogDraft = { title, subtitle, titleImage, content };
     localStorage.setItem('blogDraft', JSON.stringify(blogDraft));
   };
 
-  const resizeImage = (file, maxWidth = 800, quality = 0.8) => {
+  const resizeImage = (file, maxWidth = 1200, quality = 0.8) => {
     return new Promise((resolve) => {
       const img = new Image();
       img.onload = () => {
@@ -53,8 +105,6 @@ function BlogEditor() {
         canvas.height = height;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
-
-        // Convert to base64 with compression
         const resizedBase64 = canvas.toDataURL('image/jpeg', quality);
         resolve(resizedBase64);
       };
@@ -66,19 +116,11 @@ function BlogEditor() {
     const file = e.target.files[0];
     if (file) {
       const resizedBase64 = await resizeImage(file);
-      const img = document.createElement('img');
-      img.src = resizedBase64;
-      img.style.maxWidth = '100px';
-      img.style.maxHeight = '100px';
-      img.style.objectFit = 'cover';
-      img.style.borderRadius = '4px';
-      document.querySelector('.preview-title-image').innerHTML = '';
-      document.querySelector('.preview-title-image').appendChild(img);
-
+      updateHeroImage(resizedBase64);
       const title = document.getElementById('title').value;
-      const subheading = document.getElementById('subheading').value;
+      const subtitle = document.getElementById('subtitle').value;
       const content = editorRef.current.innerHTML;
-      saveToLocalStorage(title, subheading, resizedBase64, content);
+      saveToLocalStorage(title, subtitle, resizedBase64, content);
     }
   };
 
@@ -86,7 +128,10 @@ function BlogEditor() {
     const file = e.target.files[0];
     if (file) {
       const resizedBase64 = await resizeImage(file);
-      const img = `<img src="${resizedBase64}" style="max-width: 100%; margin: 8px 0;" alt="Uploaded image" />`;
+      const img = `<figure class="medium-figure centered">
+        <img src="${resizedBase64}" alt="Uploaded image" />
+        <figcaption contenteditable="true" class="medium-caption" placeholder="Add a caption..." onfocus="this.placeholder=''" onblur="this.placeholder='Add a caption...'"></figcaption>
+      </figure>`;
       insertAtCursor(img);
     }
   };
@@ -109,7 +154,6 @@ function BlogEditor() {
 
     const fragment = range.createContextualFragment(html);
     range.insertNode(fragment);
-
     const lastNode = fragment.lastChild || fragment;
     if (lastNode && lastNode.nodeType === Node.ELEMENT_NODE) {
       range.setStartAfter(lastNode);
@@ -119,40 +163,88 @@ function BlogEditor() {
     }
     selection.removeAllRanges();
     selection.addRange(range);
-
     editor.focus();
-
-    // Save to localStorage after content update
     const title = document.getElementById('title').value;
-    const subheading = document.getElementById('subheading').value;
-    const titleImage = document.querySelector('.preview-title-image').innerHTML ? document.querySelector('.preview-title-image img').src : null;
+    const subtitle = document.getElementById('subtitle').value;
+    const titleImage = document.querySelector('.hero-image-container').classList.contains('has-image') ? 
+      document.querySelector('.hero-image-container').style.backgroundImage.replace(/url\(["']?|["']?\)/g, '') : null;
     const content = editorRef.current.innerHTML;
-    saveToLocalStorage(title, subheading, titleImage, content);
+    updateWordCountAndReadTime(content);
+    saveToLocalStorage(title, subtitle, titleImage, content);
   };
 
   const execCommand = (command, value = null) => {
     document.execCommand(command, false, value);
     editorRef.current.focus();
-
-    // Save to localStorage after formatting
     const title = document.getElementById('title').value;
-    const subheading = document.getElementById('subheading').value;
-    const titleImage = document.querySelector('.preview-title-image').innerHTML ? document.querySelector('.preview-title-image img').src : null;
+    const subtitle = document.getElementById('subtitle').value;
+    const titleImage = document.querySelector('.hero-image-container').classList.contains('has-image') ? 
+      document.querySelector('.hero-image-container').style.backgroundImage.replace(/url\(["']?|["']?\)/g, '') : null;
     const content = editorRef.current.innerHTML;
-    saveToLocalStorage(title, subheading, titleImage, content);
+    updateWordCountAndReadTime(content);
+    saveToLocalStorage(title, subtitle, titleImage, content);
   };
 
   const handleHeading = (level) => {
     const newTag = level === 'paragraph' ? 'p' : level;
     document.execCommand('formatBlock', false, newTag);
     editorRef.current.focus();
-
-    // Save to localStorage after heading change
+    setShowHeadingOptions(false);
     const title = document.getElementById('title').value;
-    const subheading = document.getElementById('subheading').value;
-    const titleImage = document.querySelector('.preview-title-image').innerHTML ? document.querySelector('.preview-title-image img').src : null;
+    const subtitle = document.getElementById('subtitle').value;
+    const titleImage = document.querySelector('.hero-image-container').classList.contains('has-image') ? 
+      document.querySelector('.hero-image-container').style.backgroundImage.replace(/url\(["']?|["']?\)/g, '') : null;
     const content = editorRef.current.innerHTML;
-    saveToLocalStorage(title, subheading, titleImage, content);
+    updateWordCountAndReadTime(content);
+    saveToLocalStorage(title, subtitle, titleImage, content);
+  };
+
+  const handleFontColor = (color) => {
+    execCommand('foreColor', color);
+    setShowColorOptions(false);
+  };
+
+  const insertBlockquote = () => {
+    document.execCommand('formatBlock', false, 'blockquote');
+    editorRef.current.focus();
+  };
+
+  const insertUnorderedList = () => {
+    if (document.queryCommandState('insertUnorderedList')) {
+      execCommand('insertUnorderedList');
+    } else {
+      execCommand('insertUnorderedList');
+      setTimeout(() => {
+        const lists = editorRef.current.querySelectorAll('ul');
+        lists.forEach(list => {
+          if (!list.style.paddingLeft) {
+            list.style.paddingLeft = '30px';
+          }
+          if (!list.style.listStyleType) {
+            list.style.listStyleType = 'disc';
+          }
+        });
+      }, 10);
+    }
+  };
+
+  const insertOrderedList = () => {
+    if (document.queryCommandState('insertOrderedList')) {
+      execCommand('insertOrderedList');
+    } else {
+      execCommand('insertOrderedList');
+      setTimeout(() => {
+        const lists = editorRef.current.querySelectorAll('ol');
+        lists.forEach(list => {
+          if (!list.style.paddingLeft) {
+            list.style.paddingLeft = '30px';
+          }
+          if (!list.style.listStyleType) {
+            list.style.listStyleType = 'decimal';
+          }
+        });
+      }, 10);
+    }
   };
 
   const insertVideo = () => {
@@ -160,7 +252,10 @@ function BlogEditor() {
     if (url) {
       const videoId = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n]+)/)?.[1];
       if (videoId) {
-        const embed = `<iframe width="100%" height="315" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen style="margin: 8px 0;"></iframe>`;
+        const embed = `<figure class="medium-figure centered">
+          <iframe src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe>
+          <figcaption contenteditable="true" class="medium-caption" placeholder="Add a caption..." onfocus="this.placeholder=''" onblur="this.placeholder='Add a caption...'"></figcaption>
+        </figure>`;
         insertAtCursor(embed);
       } else {
         alert('Invalid YouTube URL');
@@ -181,273 +276,236 @@ function BlogEditor() {
     }
   };
 
-  const handlePreview = () => {
+  const handlePublish = async () => {
     const title = document.getElementById('title').value;
-    const subheading = document.getElementById('subheading').value;
+    const subtitle = document.getElementById('subtitle').value;
     const content = editorRef.current.innerHTML;
-    const titleImage = document.querySelector('.preview-title-image').innerHTML;
-
-    const previewWindow = window.open('', '_blank');
-    previewWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>${title || 'Blog Preview'}</title>
-        <style>
-          body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; line-height: 1.6; }
-          img { max-width: 100%; height: auto; }
-          iframe { max-width: 100%; }
-          ul { list-style-type: disc; padding-left: 32px; }
-          ol { list-style-type: decimal; padding-left: 32px; }
-          .buttons { margin-top: 20px; }
-          button { padding: 8px 16px; margin-right: 10px; cursor: pointer; }
-        </style>
-      </head>
-      <body>
-        <div class="preview-title-image">${titleImage}</div>
-        <h1>${title || 'Untitled Blog'}</h1>
-        <h3>${subheading || ''}</h3>
-        <div>${content || 'No content yet'}</div>
-        <div class="buttons">
-          <button onclick="window.close()">Confirm and Return</button>
-          <button onclick="window.opener.focus(); window.close()">Edit Blog</button>
-        </div>
-      </body>
-      </html>
-    `);
-    previewWindow.document.close();
-  };
-
-  const handleCreate = async () => {
-    const title = document.getElementById('title').value;
-    const subheading = document.getElementById('subheading').value;
-    const content = editorRef.current.innerHTML;
-    const titleImage = document.querySelector('.preview-title-image').innerHTML ? document.querySelector('.preview-title-image img').src : null;
-
-    const blogData = { title, subheading, titleImage, content };
-
+    const titleImage = document.querySelector('.hero-image-container').classList.contains('has-image') ? 
+      document.querySelector('.hero-image-container').style.backgroundImage.replace(/url\(["']?|["']?\)/g, '') : null;
+    setIsPublishing(true);
+    const blogData = { title, subtitle, titleImage, content };
     try {
       const response = await axios.post('http://localhost:8080/api/blogs', blogData);
-      console.log('Blog created:', response.data);
-      alert('Blog created successfully!');
-      localStorage.removeItem('blogDraft'); // Clear draft after successful creation
+      console.log('Blog published:', response.data);
+      alert('Blog published successfully!');
+      localStorage.removeItem('blogDraft');
     } catch (error) {
-      console.error('Error creating blog:', error);
-      alert('Failed to create blog');
+      console.error('Error publishing blog:', error);
+      alert('Failed to publish blog');
+    } finally {
+      setIsPublishing(false);
     }
   };
 
   const handleInputChange = () => {
     const title = document.getElementById('title').value;
-    const subheading = document.getElementById('subheading').value;
-    const titleImage = document.querySelector('.preview-title-image').innerHTML ? document.querySelector('.preview-title-image img').src : null;
+    const subtitle = document.getElementById('subtitle').value;
+    const titleImage = document.querySelector('.hero-image-container').classList.contains('has-image') ? 
+      document.querySelector('.hero-image-container').style.backgroundImage.replace(/url\(["']?|["']?\)/g, '') : null;
     const content = editorRef.current.innerHTML;
-    saveToLocalStorage(title, subheading, titleImage, content);
+    updateWordCountAndReadTime(content);
+    saveToLocalStorage(title, subtitle, titleImage, content);
   };
 
+  const handleSaveDraft = () => {
+    const title = document.getElementById('title').value;
+    const subtitle = document.getElementById('subtitle').value;
+    const titleImage = document.querySelector('.hero-image-container').classList.contains('has-image') ? 
+      document.querySelector('.hero-image-container').style.backgroundImage.replace(/url\(["']?|["']?\)/g, '') : null;
+    const content = editorRef.current.innerHTML;
+    setIsSaving(true);
+    saveToLocalStorage(title, subtitle, titleImage, content);
+    setTimeout(() => {
+      setIsSaving(false);
+    }, 1000);
+  };
+
+  // Handle Enter key in caption to move to next line
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Enter' && e.target.className.includes('medium-caption')) {
+        e.preventDefault();
+        const caption = e.target;
+        const range = document.createRange();
+        range.selectNodeContents(caption);
+        range.collapse(false);
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+        document.execCommand('insertHTML', false, '<br><br>'); // Double <br> to ensure new line
+        setTimeout(() => {
+          const nextNode = caption.nextSibling;
+          if (nextNode && nextNode.nodeName === 'BR') {
+            range.setStartAfter(nextNode);
+            range.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(range);
+            editorRef.current.focus();
+          }
+        }, 0);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   return (
-    <div style={{ textAlign: 'center', marginLeft: '256px' }}>
-      <h2 style={{ marginTop: '100px' }}>Hello from DailyDiaries</h2>
-      <div
-        style={{
-          maxWidth: '600px',
-          margin: '0 auto',
-          padding: '20px',
-          border: '1px solid #ddd',
-          borderRadius: '5px',
-          backgroundColor: '#fff',
-          boxShadow: '0 0 5px rgba(0, 0, 0, 0.2)',
-        }}
-      >
-        <div style={{ marginBottom: '16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div style={{ flex: 1 }}>
-              <label
-                style={{
-                  display: 'block',
-                  fontSize: '18px',
-                  fontWeight: '600',
-                  marginBottom: '8px',
-                }}
-                htmlFor="title"
-              >
-                Blog Title
-              </label>
-              <input
-                type="text"
-                id="title"
-                placeholder="Enter your blog title"
-                style={{
-                  width: '100%',
-                  padding: '8px',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  fontSize: '16px',
-                }}
-                onChange={handleInputChange}
-              />
-            </div>
-            <div style={{ flexShrink: 0 }}>
-              <label
-                style={{
-                  display: 'block',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  marginBottom: '8px',
-                }}
-                htmlFor="titleImage"
-              >
-                Upload Title Image
-              </label>
-              <input
-                type="file"
-                id="titleImage"
-                ref={titleImageInputRef}
-                accept="image/*"
-                onChange={handleTitleImageChange}
-                style={{ width: '100%', padding: '8px 0' }}
-              />
-              <div className="preview-title-image" style={{ marginTop: '8px', maxWidth: '100px', maxHeight: '100px', overflow: 'hidden' }}></div>
-            </div>
-          </div>
+    <div className="medium-editor-container">
+      <div className="medium-editor-nav">
+        <div className="medium-editor-stats">
+          <span>{wordCount} words</span>
+          <span>{readTime}</span>
         </div>
-        <div style={{ marginBottom: '16px' }}>
-          <label
-            style={{
-              display: 'block',
-              fontSize: '18px',
-              fontWeight: '600',
-              marginBottom: '8px',
-            }}
-            htmlFor="subheading"
-          >
-            Subheading
-          </label>
+      </div>
+
+      <div className="medium-editor-content">
+        <div 
+          className="hero-image-container"
+          onClick={() => titleImageInputRef.current.click()}
+        >
+          <div className="hero-image-overlay">
+            <FaImage className="hero-image-icon" />
+            <span>Add a cover image</span>
+          </div>
           <input
-            type="text"
-            id="subheading"
-            placeholder="Enter your subheading"
-            style={{
-              width: '100%',
-              padding: '8px',
-              border: '1px solid #ddd',
-              borderRadius: '4px',
-              fontSize: '16px',
-            }}
-            onChange={handleInputChange}
+            type="file"
+            ref={titleImageInputRef}
+            accept="image/*"
+            onChange={handleTitleImageChange}
+            style={{ display: 'none' }}
           />
         </div>
-        <div>
-          <label
-            style={{
-              display: 'block',
-              fontSize: '18px',
-              fontWeight: '600',
-              marginBottom: '8px',
-            }}
-          >
-            Blog Content
-          </label>
-          <div style={{ border: '1px solid #ddd', borderRadius: '4px' }}>
-            <div
-              style={{
-                backgroundColor: '#f7f7f7',
-                borderBottom: '1px solid #ddd',
-                padding: '8px',
-                display: 'flex',
-                gap: '8px',
-                flexWrap: 'wrap',
-              }}
-            >
-              <button onClick={() => execCommand('bold')} title="Bold" style={{ padding: '4px 8px', background: 'none', border: 'none', cursor: 'pointer' }}>
-                <FaBold />
+
+        <div className="medium-editor-body">
+          <input
+            type="text"
+            id="title"
+            placeholder="Title"
+            className="medium-title-input"
+            onChange={handleInputChange}
+          />
+          
+          <input
+            type="text"
+            id="subtitle"
+            placeholder="Subtitle"
+            className="medium-subtitle-input"
+            onChange={handleInputChange}
+          />
+
+          <div className="medium-toolbar">
+            <button onClick={() => execCommand('bold')} title="Bold (Ctrl+B)" className="medium-toolbar-btn">
+              <FaBold />
+            </button>
+            <button onClick={() => execCommand('italic')} title="Italic (Ctrl+I)" className="medium-toolbar-btn">
+              <FaItalic />
+            </button>
+            <div className="medium-toolbar-dropdown">
+              <button 
+                onClick={() => setShowHeadingOptions(!showHeadingOptions)} 
+                title="Text style" 
+                className="medium-toolbar-btn"
+              >
+                <MdFormatSize />
               </button>
-              <button onClick={() => execCommand('italic')} title="Italic" style={{ padding: '4px 8px', background: 'none', border: 'none', cursor: 'pointer' }}>
-                <FaItalic />
-              </button>
-              <button onClick={() => handleHeading('h1')} title="Heading 1" style={{ padding: '4px 8px', background: 'none', border: 'none', cursor: 'pointer' }}>
-                <FaHeading style={{ fontSize: '18px' }} />
-              </button>
-              <button onClick={() => handleHeading('h2')} title="Heading 2" style={{ padding: '4px 8px', background: 'none', border: 'none', cursor: 'pointer' }}>
-                <FaHeading style={{ fontSize: '14px' }} />
-              </button>
-              <button onClick={() => handleHeading('paragraph')} title="Paragraph" style={{ padding: '4px 8px', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>
-                P
-              </button>
-              <button onClick={() => execCommand('insertUnorderedList')} title="Bulleted List" style={{ padding: '4px 8px', background: 'none', border: 'none', cursor: 'pointer' }}>
-                <FaListUl />
-              </button>
-              <button onClick={() => execCommand('insertOrderedList')} title="Numbered List" style={{ padding: '4px 8px', background: 'none', border: 'none', cursor: 'pointer' }}>
-                <FaListOl />
-              </button>
-              <button onClick={() => contentImageInputRef.current.click()} title="Insert Image" style={{ padding: '4px 8px', background: 'none', border: 'none', cursor: 'pointer' }}>
-                <FaImage />
-              </button>
-              <input type="file" ref={contentImageInputRef} accept="image/*" onChange={handleContentImageChange} style={{ display: 'none' }} />
-              <button onClick={insertVideo} title="Insert Video" style={{ padding: '4px 8px', background: 'none', border: 'none', cursor: 'pointer' }}>
-                <FaVideo />
-              </button>
-              <button onClick={insertLink} title="Insert Link" style={{ padding: '4px 8px', background: 'none', border: 'none', cursor: 'pointer' }}>
-                <FaLink />
-              </button>
-              <button onClick={() => execCommand('justifyLeft')} title="Align Left" style={{ padding: '4px 8px', background: 'none', border: 'none', cursor: 'pointer' }}>
-                <FaAlignLeft />
-              </button>
-              <button onClick={() => execCommand('justifyCenter')} title="Align Center" style={{ padding: '4px 8px', background: 'none', border: 'none', cursor: 'pointer' }}>
-                <FaAlignCenter />
-              </button>
-              <button onClick={() => execCommand('justifyRight')} title="Align Right" style={{ padding: '4px 8px', background: 'none', border: 'none', cursor: 'pointer' }}>
-                <FaAlignRight />
-              </button>
-              <button onClick={() => execCommand('justifyFull')} title="Justify" style={{ padding: '4px 8px', background: 'none', border: 'none', cursor: 'pointer' }}>
-                <FaAlignJustify />
-              </button>
+              {showHeadingOptions && (
+                <div className="medium-heading-options">
+                  <button onClick={() => handleHeading('h1')} className="medium-heading-option">Heading 1</button>
+                  <button onClick={() => handleHeading('h2')} className="medium-heading-option">Heading 2</button>
+                  <button onClick={() => handleHeading('h3')} className="medium-heading-option">Heading 3</button>
+                  <button onClick={() => handleHeading('paragraph')} className="medium-heading-option">Paragraph</button>
+                </div>
+              )}
             </div>
-            <div
-              ref={editorRef}
-              contentEditable
-              dir="ltr"
-              className="editor-content"
-              style={{
-                minHeight: '300px',
-                padding: '16px',
-                backgroundColor: '#fff',
-                borderRadius: '0 0 4px 4px',
-                fontSize: '16px',
-                lineHeight: '1.6',
-                outline: 'none',
-                textAlign: 'left',
-              }}
-              onInput={handleInputChange}
+            <div className="medium-toolbar-dropdown color-dropdown">
+              <button 
+                onClick={() => setShowColorOptions(!showColorOptions)} 
+                title="Font Color" 
+                className="medium-toolbar-btn"
+              >
+                <FaPalette />
+              </button>
+              {showColorOptions && (
+                <div className="medium-heading-options">
+                  {colorOptions.map((color, index) => (
+                    <button 
+                      key={index} 
+                      onClick={() => handleFontColor(color.value)} 
+                      className="medium-heading-option color-option"
+                      style={{display: 'flex', alignItems: 'center'}}
+                    >
+                      <span 
+                        style={{
+                          display: 'inline-block', 
+                          width: '16px', 
+                          height: '16px', 
+                          backgroundColor: color.value, 
+                          marginRight: '8px',
+                          borderRadius: '2px'
+                        }}
+                      ></span>
+                      {color.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <button onClick={insertBlockquote} title="Quote" className="medium-toolbar-btn">
+              <FaQuoteRight />
+            </button>
+            <button onClick={insertUnorderedList} title="Bulleted List" className="medium-toolbar-btn">
+              <FaListUl />
+            </button>
+            <button onClick={insertOrderedList} title="Numbered List" className="medium-toolbar-btn">
+              <FaListOl />
+            </button>
+            <button onClick={() => contentImageInputRef.current.click()} title="Insert Image" className="medium-toolbar-btn">
+              <FaImage />
+            </button>
+            <input 
+              type="file" 
+              ref={contentImageInputRef} 
+              accept="image/*" 
+              onChange={handleContentImageChange} 
+              style={{ display: 'none' }} 
             />
+            <button onClick={insertVideo} title="Insert Video" className="medium-toolbar-btn">
+              <FaVideo />
+            </button>
+            <button onClick={insertLink} title="Insert Link" className="medium-toolbar-btn">
+              <FaLink />
+            </button>
+            <button onClick={() => execCommand('undo')} title="Undo" className="medium-toolbar-btn">
+              <FaUndo />
+            </button>
+            <button onClick={() => execCommand('redo')} title="Redo" className="medium-toolbar-btn">
+              <FaRedo />
+            </button>
           </div>
+
+          <div
+            ref={editorRef}
+            contentEditable
+            className="medium-editor-field"
+            onInput={handleInputChange}
+            placeholder="Tell your story..."
+          />
         </div>
-        <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'center', gap: '16px' }}>
-          <button
-            onClick={handlePreview}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: '#0066cc',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-            }}
+
+        <div className="medium-editor-footer">
+          <button 
+            onClick={handleSaveDraft} 
+            className={`medium-btn medium-btn-outline ${isSaving ? 'saving-indicator' : ''}`}
+            disabled={isSaving}
           >
-            Preview
+            {isSaving ? 'Saving...' : 'Save draft'}
           </button>
-          <button
-            onClick={handleCreate}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: '#28a745',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-            }}
+          <button 
+            onClick={handlePublish} 
+            className="medium-btn medium-btn-publish"
+            disabled={isPublishing}
           >
-            Create
+            {isPublishing ? 'Publishing...' : 'Publish'}
           </button>
         </div>
       </div>

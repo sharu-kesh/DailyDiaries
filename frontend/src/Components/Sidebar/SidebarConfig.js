@@ -1,4 +1,4 @@
-import { AiOutlineHome,AiFillHome, AiOutlineHeart, AiOutlinePlusCircle, AiFillPlusCircle,AiFillHeart } from "react-icons/ai";
+import { AiOutlineHome,AiFillHome,  AiOutlinePlusCircle, AiFillPlusCircle} from "react-icons/ai";
 import { CgProfile } from "react-icons/cg";
 
 export const menu=[
