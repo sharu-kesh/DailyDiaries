@@ -96,30 +96,7 @@ const generateMoreArticles = (startId, count) => {
   });
 };
 
-const staffPicks = [
-  {
-    id: 1,
-    title: "The Tools Will Change. Your Craft Doesn't Have To.",
-    author: "Agustin Sanchez",
-    date: "Apr 14",
-    image: "https://placeholder.com/40x40"
-  },
-  {
-    id: 2,
-    title: "Why Your Child Can't Stop Using That App (A Game Designer's Warning)",
-    author: "Sam Liberty",
-    publication: "Bootcamp",
-    date: "Mar 31",
-    image: "https://placeholder.com/40x40"
-  },
-  {
-    id: 3,
-    title: "Our Souls Need Proof of Work",
-    author: "Julie Zhuo",
-    date: "Mar 10",
-    image: "https://placeholder.com/40x40"
-  }
-];
+
 
 const recommendedTopics = ["Writing", "Cryptocurrency", "Politics", "Relationships", "Business", "Psychology", "Health"];
 
@@ -499,35 +476,7 @@ const BlogFeed = () => {
         </div>
       </div>
 
-      <aside className="sidebar">
-        <section className="staff-picks">
-          <h3>Staff Picks</h3>
-          <ul className="staff-picks-list">
-            {staffPicks.map(pick => (
-              <li key={pick.id} className="staff-pick-item">
-                <div className="pick-author-image">
-                  <img src={pick.image} alt={pick.author} />
-                </div>
-                <div className="pick-content">
-                  <div className="pick-author-name">{pick.author}</div>
-                  <h4 className="pick-title">{pick.title}</h4>
-                  <div className="pick-date">{pick.date}</div>
-                </div>
-              </li>
-            ))}
-          </ul>
-          <a href="#" className="see-all-link">See the full list</a>
-        </section>
-
-        <section className="recommended-topics">
-          <h3>Recommended topics</h3>
-          <div className="topic-tags">
-            {recommendedTopics.map((topic, index) => (
-              <span key={index} className="topic-tag">{topic}</span>
-            ))}
-          </div>
-        </section>
-      </aside>
+      
     </div>
   );
 };

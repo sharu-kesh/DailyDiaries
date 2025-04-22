@@ -4,7 +4,7 @@
     top: 0;
     left: 0;
     height: 100vh;
-    width: 20%;
+    width: 256px;
     border-right: 2px solid #e6e6e6;
     background-color: #F1F0E9;
     display: flex;
@@ -19,7 +19,7 @@
     flex: 1 1 auto;
   }
   
-  .sidebar-logo {
+  .sidebar-logo { 
     padding: 24px 20px 32px 0px;
   }
   
