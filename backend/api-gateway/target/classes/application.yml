@@ -1,0 +1,38 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: user-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/v2/users/**
+        - id: comment-service
+          uri: http://localhost:8084
+          predicates:
+            - Path=/api/v2/comments/**
+        - id: reaction-service
+          uri: http://localhost:8083
+          predicates:
+            - Path=/api/v2/reactions/**
+        - id: feed-service
+          uri: http://localhost:8085
+          predicates:
+            - Path=/api/v2/feed/**
+        - id: blog-service
+          uri: http://localhost:8082
+          predicates:
+            - Path=/api/v2/blogs/**
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    com.dailydiaries: DEBUG
+    reactor.netty: DEBUG
