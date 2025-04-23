@@ -1,16 +1,19 @@
 package com.dailydiaries.controller;
 
 import com.dailydiaries.entity.Blog;
+import com.dailydiaries.service.BlogResponse;
 import com.dailydiaries.service.BlogService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v2/blogs")
@@ -24,27 +27,27 @@ public class BlogController {
         this.blogService = blogService;
     }
 
+    @PostMapping
+    public ResponseEntity<Blog> createBlog(
+            @RequestHeader("X-Auth-User-Id") Long userId,
+            @RequestBody Blog blog) {
+        logger.debug("Received POST /api/v2/blogs for userId: {}", userId);
+        Blog createdBlog = blogService.createBlog(blog, userId);
+        return ResponseEntity.ok(createdBlog);
+    }
+
     @GetMapping
-    public ResponseEntity<Page<Blog>> getBlogsByUserIds(
-            @RequestParam("userIds") String userIds,
+    public ResponseEntity<Page<BlogResponse>> getBlogsByUserIds(
+            @RequestParam String userIds,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestHeader("X-Auth-User-Id") String authUserId) {
+            @RequestParam(defaultValue = "10") int size) {
         logger.debug("Received GET /api/v2/blogs?userIds={}&page={}&size={}", userIds, page, size);
         List<Long> userIdList = Arrays.stream(userIds.split(","))
                 .map(Long::parseLong)
-                .toList();
-        Page<Blog> blogs = blogService.findBlogsByUserIds(userIdList, PageRequest.of(page, size));
+                .collect(Collectors.toList());
+        Pageable pageable = PageRequest.of(page, size);
+        Page<BlogResponse> blogs = blogService.getBlogsByUserIds(userIdList, pageable);
         return ResponseEntity.ok(blogs);
-    }
-
-    @PostMapping
-    public ResponseEntity<Blog> createBlog(
-            @RequestBody BlogRequest blogRequest,
-            @RequestHeader("X-Auth-User-Id") Long userId) {
-        logger.debug("Creating blog for userId: {}", userId);
-        Blog blog = blogService.createBlog(blogRequest.title(), blogRequest.content(), userId);
-        return ResponseEntity.ok(blog);
     }
 
     @DeleteMapping("/{id}")
@@ -55,6 +58,4 @@ public class BlogController {
         blogService.deleteBlog(id, userId);
         return ResponseEntity.ok().build();
     }
-
-    record BlogRequest(String title, String content) {}
 }

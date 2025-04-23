@@ -6,7 +6,7 @@ import java.util.List;
 
 @Data
 public class BlogPageResponse {
-    private List<Blog> content;
+    private List<BlogResponse> content;
     private int pageNumber;
     private int pageSize;
     private long totalElements;

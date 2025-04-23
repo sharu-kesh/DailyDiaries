@@ -28,5 +28,22 @@ public class ReactionController {
         return ResponseEntity.ok(reaction);
     }
 
+    @GetMapping("/blog/{blogId}/like-count")
+    public ResponseEntity<Long> getLikeCount(@PathVariable Long blogId) {
+        logger.debug("Received GET /api/v2/reactions/blog/{}/like-count", blogId);
+        long likeCount = reactionService.getLikeCount(blogId);
+        return ResponseEntity.ok(likeCount);
+    }
+
+    @DeleteMapping
+    public ResponseEntity<Void> deleteReaction(
+            @RequestParam Long blogId,
+            @RequestParam String type,
+            @RequestHeader("X-Auth-User-Id") Long userId) {
+        logger.debug("Received DELETE /api/v2/reactions?blogId={}&type={}", blogId, type);
+        reactionService.deleteReaction(blogId, userId, type);
+        return ResponseEntity.ok().build();
+    }
+
     record ReactionRequest(Long blogId, String type) {}
 }

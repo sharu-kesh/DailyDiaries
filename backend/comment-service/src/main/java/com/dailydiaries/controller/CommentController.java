@@ -59,4 +59,12 @@ public class CommentController {
         Page<Comment> comments = commentService.getCommentsByBlogId(blogId, pageable);
         return ResponseEntity.ok(comments);
     }
+
+    @GetMapping("/blog/{blogId}/getCommentsCount")
+    public ResponseEntity<Long> getCommentsCount(
+            @PathVariable Long blogId) {
+        logger.debug("Received GET /blog/{}/getCommentsCount", blogId);
+        Long commentCount = commentService.getCommentsCountByBlogId(blogId);
+        return ResponseEntity.ok(commentCount);
+    }
 }

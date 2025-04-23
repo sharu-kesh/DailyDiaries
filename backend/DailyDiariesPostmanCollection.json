@@ -1,645 +1,1207 @@
 {
-  "info": {
-    "_postman_id": "a7b2c4d5-e6f7-4890-b1c2-d3e4f5g6h7i8",
-    "name": "Daily Diaries API",
-    "description": "Postman collection for testing Daily Diaries microservices via API Gateway",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-  },
-  "item": [
-    {
-      "name": "User Service",
-      "item": [
-        {
-          "name": "Register User",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\",\n  \"bio\": \"Test user\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/v2/users/register",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v2", "users", "register"]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Register User - Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test(\"Register User - Response has userId\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.id).to.be.a('number');",
-                  "    pm.collectionVariables.set(\"userId\", jsonData.id);",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
-          "name": "Login User",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/v2/users/token",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v2", "users", "token"]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Login User - Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test(\"Login User - Response has token\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.be.a('string');",
-                  "    pm.collectionVariables.set(\"token\", jsonData);",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
-          "name": "Get User by Email",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/v2/users/email/test@example.com",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v2", "users", "email", "test@example.com"]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Get User by Email - Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test(\"Get User by Email - Response has userId\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.id).to.be.a('number');",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Feed Service",
-      "item": [
-        {
-          "name": "Follow User",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/v2/feed/1/follow",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v2", "feed", "1", "follow"]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Follow User - Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
-          "name": "Unfollow User",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/v2/feed/1/unfollow",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v2", "feed", "1", "unfollow"]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Unfollow User - Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
-          "name": "Get Feed",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/v2/feed?page=0&size=10",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v2", "feed"],
-              "query": [
-                {
-                  "key": "page",
-                  "value": "0"
-                },
-                {
-                  "key": "size",
-                  "value": "10"
-                }
-              ]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Get Feed - Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test(\"Get Feed - Response has content\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.content).to.be.an('array');",
-                  "    pm.expect(jsonData.pageNumber).to.be.a('number');",
-                  "    pm.expect(jsonData.pageSize).to.be.a('number');",
-                  "    pm.expect(jsonData.totalElements).to.be.a('number');",
-                  "    pm.expect(jsonData.totalPages).to.be.a('number');",
-                  "    pm.expect(jsonData.last).to.be.a('boolean');",
-                  "    if (jsonData.content.length > 0) {",
-                  "        pm.expect(jsonData.content[0]).to.have.property('id').that.is.a('number');",
-                  "        pm.expect(jsonData.content[0]).to.have.property('title').that.is.a('string');",
-                  "        pm.expect(jsonData.content[0]).to.have.property('content').that.is.a('string');",
-                  "        pm.expect(jsonData.content[0]).to.have.property('userId').that.is.a('number');",
-                  "    }",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Blog Service",
-      "item": [
-        {
-          "name": "Create Blog",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"title\": \"Test Blog\",\n  \"content\": \"This is a test blog content\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/v2/blogs",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v2", "blogs"]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Create Blog - Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test(\"Create Blog - Response has blogId\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.id).to.be.a('number');",
-                  "    pm.collectionVariables.set(\"blogId\", jsonData.id);",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
-          "name": "Get Blogs by User IDs",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              },
-              {
-                "key": "X-Auth-User-Id",
-                "value": "{{userId}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/v2/blogs?userIds=1,2&page=0&size=10",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v2", "blogs"],
-              "query": [
-                {
-                  "key": "userIds",
-                  "value": "1,2"
-                },
-                {
-                  "key": "page",
-                  "value": "0"
-                },
-                {
-                  "key": "size",
-                  "value": "10"
-                }
-              ]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Get Blogs by User IDs - Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test(\"Get Blogs by User IDs - Response has content\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.content).to.be.an('array');",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
-          "name": "Delete Blog",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              },
-              {
-                "key": "X-Auth-User-Id",
-                "value": "{{userId}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/v2/blogs/{{blogId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v2", "blogs", "{{blogId}}"]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Delete Blog - Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Comment Service",
-      "item": [
-        {
-          "name": "Add Comment",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"blogId\": {{blogId}},\n  \"content\": \"Great post!\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/v2/comments",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v2", "comments"]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Add Comment - Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test(\"Add Comment - Response has commentId\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.id).to.be.a('number');",
-                  "    pm.expect(jsonData.blogId).to.be.a('number');",
-                  "    pm.expect(jsonData.userId).to.be.a('number');",
-                  "    pm.expect(jsonData.content).to.be.a('string');",
-                  "    pm.collectionVariables.set(\"commentId\", jsonData.id);",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
-          "name": "Get Comment",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/v2/comments/{{commentId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v2", "comments", "{{commentId}}"]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Get Comment - Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test(\"Get Comment - Response has comment details\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.id).to.be.a('number');",
-                  "    pm.expect(jsonData.blogId).to.be.a('number');",
-                  "    pm.expect(jsonData.userId).to.be.a('number');",
-                  "    pm.expect(jsonData.content).to.be.a('string');",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
-          "name": "Delete Comment",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              },
-              {
-                "key": "X-Auth-User-Id",
-                "value": "{{userId}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/v2/comments/{{commentId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v2", "comments", "{{commentId}}"]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Delete Comment - Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
-          "name": "Get All Comments",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              },
-              {
-                "key": "X-Auth-User-Id",
-                "value": "{{userId}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/v2/comments/blog/{{blogId}}?page=0&size=10",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v2", "comments", "blog", "{{blogId}}"],
-              "query": [
-                {
-                  "key": "page",
-                  "value": "0"
-                },
-                {
-                  "key": "size",
-                  "value": "10"
-                }
-              ]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Get All Comments - Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test(\"Get All Comments - Response has paginated content\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.content).to.be.an('array');",
-                  "    pm.expect(jsonData.pageNumber).to.be.a('number');",
-                  "    pm.expect(jsonData.pageSize).to.be.a('number');",
-                  "    pm.expect(jsonData.totalElements).to.be.a('number');",
-                  "    pm.expect(jsonData.totalPages).to.be.a('number');",
-                  "    pm.expect(jsonData.last).to.be.a('boolean');",
-                  "    if (jsonData.content.length > 0) {",
-                  "        pm.expect(jsonData.content[0]).to.have.property('id').that.is.a('number');",
-                  "        pm.expect(jsonData.content[0]).to.have.property('blogId').that.is.a('number');",
-                  "        pm.expect(jsonData.content[0]).to.have.property('userId').that.is.a('number');",
-                  "        pm.expect(jsonData.content[0]).to.have.property('content').that.is.a('string');",
-                  "    }",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Reaction Service",
-      "item": [
-        {
-          "name": "Add Reaction",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"blogId\": {{blogId}},\n  \"type\": \"LIKE\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/v2/reactions",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v2", "reactions"]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Add Reaction - Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "pm.test(\"Add Reaction - Response has reactionId\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.id).to.be.a('number');",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        }
-      ]
-    }
-  ],
-  "variable": [
-    {
-      "key": "baseUrl",
-      "value": "http://localhost:8080"
-    },
-    {
-      "key": "token",
-      "value": ""
-    },
-    {
-      "key": "userId",
-      "value": ""
-    },
-    {
-      "key": "blogId",
-      "value": "1"
-    },
-    {
-      "key": "commentId",
-      "value": ""
-    }
-  ]
+	"info": {
+		"_postman_id": "c0cefba8-ca6e-4a27-b61f-0c260be8ecdf",
+		"name": "Daily Diaries API",
+		"description": "Postman collection for testing Daily Diaries microservices via API Gateway",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "34160070"
+	},
+	"item": [
+		{
+			"name": "User Service",
+			"item": [
+				{
+					"name": "Register User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Register User - Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Register User - Response has userId\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.id).to.be.a('number');",
+									"    pm.collectionVariables.set(\"userId\", jsonData.id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\",\n  \"username\": \"testuser\",\n  \"bio\": \"Test user bio\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v2/users/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"users",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Login User - Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Login User - Response has token\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.a('string');",
+									"    pm.collectionVariables.set(\"token\", jsonData);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v2/users/token",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"users",
+								"token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User by Email",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Get User by Email - Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Get User by Email - Response has user details\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.id).to.be.a('number');",
+									"    pm.expect(jsonData.username).to.be.a('string');",
+									"    pm.expect(jsonData.bio).to.be.a('string');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v2/users/email/test@example.com",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"users",
+								"email",
+								"test@example.com"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Update User - Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Update User - Response has updated details\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.username).to.equal('updateduser');",
+									"    pm.expect(jsonData.bio).to.equal('Updated bio');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "X-Auth-User-Id",
+								"value": "{{userId}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"updateduser\",\n  \"bio\": \"Updated bio\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v2/users/{{userId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"users",
+								"{{userId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Save Blog",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Save Blog - Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "X-Auth-User-Id",
+								"value": "{{userId}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"blogId\": {{blogId}}\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v2/users/{{userId}}/saved-blogs",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"users",
+								"{{userId}}",
+								"saved-blogs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Saved Blogs",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Get Saved Blogs - Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Get Saved Blogs - Response has paginated content\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.content).to.be.an('array');",
+									"    pm.expect(jsonData.pageNumber).to.be.a('number');",
+									"    pm.expect(jsonData.pageSize).to.be.a('number');",
+									"    pm.expect(jsonData.totalElements).to.be.a('number');",
+									"    pm.expect(jsonData.totalPages).to.be.a('number');",
+									"    pm.expect(jsonData.last).to.be.a('boolean');",
+									"    if (jsonData.content.length > 0) {",
+									"        pm.expect(jsonData.content[0]).to.be.a('number');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v2/users/{{userId}}/saved-blogs?page=0&size=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"users",
+								"{{userId}}",
+								"saved-blogs"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User by Id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Get Saved Blogs - Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Get Saved Blogs - Response has paginated content\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.content).to.be.an('array');",
+									"    pm.expect(jsonData.pageNumber).to.be.a('number');",
+									"    pm.expect(jsonData.pageSize).to.be.a('number');",
+									"    pm.expect(jsonData.totalElements).to.be.a('number');",
+									"    pm.expect(jsonData.totalPages).to.be.a('number');",
+									"    pm.expect(jsonData.last).to.be.a('boolean');",
+									"    if (jsonData.content.length > 0) {",
+									"        pm.expect(jsonData.content[0]).to.be.a('number');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v2/users/{{userId}}/saved-blogs?page=0&size=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"users",
+								"{{userId}}",
+								"saved-blogs"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Feed Service",
+			"item": [
+				{
+					"name": "Follow User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Follow User - Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v2/feed/1/follow",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"feed",
+								"1",
+								"follow"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Unfollow User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Unfollow User - Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v2/feed/1/unfollow",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"feed",
+								"1",
+								"unfollow"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Feed",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Get Feed - Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Get Feed - Response has content\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.content).to.be.an('array');",
+									"    pm.expect(jsonData.pageNumber).to.be.a('number');",
+									"    pm.expect(jsonData.pageSize).to.be.a('number');",
+									"    pm.expect(jsonData.totalElements).to.be.a('number');",
+									"    pm.expect(jsonData.totalPages).to.be.a('number');",
+									"    pm.expect(jsonData.last).to.be.a('boolean');",
+									"    if (jsonData.content.length > 0) {",
+									"        pm.expect(jsonData.content[0]).to.have.property('id').that.is.a('number');",
+									"        pm.expect(jsonData.content[0]).to.have.property('title').that.is.a('string');",
+									"        pm.expect(jsonData.content[0]).to.have.property('content').that.is.a('string');",
+									"        pm.expect(jsonData.content[0]).to.have.property('userId').that.is.a('number');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v2/feed?page=0&size=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"feed"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Followings",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Get Feed - Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Get Feed - Response has content\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.content).to.be.an('array');",
+									"    pm.expect(jsonData.pageNumber).to.be.a('number');",
+									"    pm.expect(jsonData.pageSize).to.be.a('number');",
+									"    pm.expect(jsonData.totalElements).to.be.a('number');",
+									"    pm.expect(jsonData.totalPages).to.be.a('number');",
+									"    pm.expect(jsonData.last).to.be.a('boolean');",
+									"    if (jsonData.content.length > 0) {",
+									"        pm.expect(jsonData.content[0]).to.have.property('id').that.is.a('number');",
+									"        pm.expect(jsonData.content[0]).to.have.property('title').that.is.a('string');",
+									"        pm.expect(jsonData.content[0]).to.have.property('content').that.is.a('string');",
+									"        pm.expect(jsonData.content[0]).to.have.property('userId').that.is.a('number');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v2/feed/getFollowings",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"feed",
+								"getFollowings"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Followers",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Get Feed - Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Get Feed - Response has content\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.content).to.be.an('array');",
+									"    pm.expect(jsonData.pageNumber).to.be.a('number');",
+									"    pm.expect(jsonData.pageSize).to.be.a('number');",
+									"    pm.expect(jsonData.totalElements).to.be.a('number');",
+									"    pm.expect(jsonData.totalPages).to.be.a('number');",
+									"    pm.expect(jsonData.last).to.be.a('boolean');",
+									"    if (jsonData.content.length > 0) {",
+									"        pm.expect(jsonData.content[0]).to.have.property('id').that.is.a('number');",
+									"        pm.expect(jsonData.content[0]).to.have.property('title').that.is.a('string');",
+									"        pm.expect(jsonData.content[0]).to.have.property('content').that.is.a('string');",
+									"        pm.expect(jsonData.content[0]).to.have.property('userId').that.is.a('number');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v2/feed/getFollowers",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"feed",
+								"getFollowers"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Blog Service",
+			"item": [
+				{
+					"name": "Create Blog",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Create Blog - Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Create Blog - Response has blogId\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.id).to.be.a('number');",
+									"    pm.expect(jsonData.title).to.be.a('string');",
+									"    pm.expect(jsonData.subtitle).to.be.a('string');",
+									"    pm.expect(jsonData.content).to.be.a('string');",
+									"    pm.expect(jsonData.userId).to.be.a('number');",
+									"    pm.expect(jsonData.createdAt).to.be.a('string');",
+									"    pm.expect(jsonData.likeCount).to.be.a('number');",
+									"    pm.collectionVariables.set(\"blogId\", jsonData.id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Test Blog\",\n  \"subtitle\": \"First Post\",\n  \"titleImage\": null,\n  \"content\": \"This is a test blog content\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v2/blogs",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"blogs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Blogs by User IDs",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Get Blogs by User IDs - Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Get Blogs by User IDs - Response has content\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.content).to.be.an('array');",
+									"    pm.expect(jsonData.pageNumber).to.be.a('number');",
+									"    pm.expect(jsonData.pageSize).to.be.a('number');",
+									"    pm.expect(jsonData.totalElements).to.be.a('number');",
+									"    pm.expect(jsonData.totalPages).to.be.a('number');",
+									"    pm.expect(jsonData.last).to.be.a('boolean');",
+									"    if (jsonData.content.length > 0) {",
+									"        pm.expect(jsonData.content[0]).to.have.property('id').that.is.a('number');",
+									"        pm.expect(jsonData.content[0]).to.have.property('title').that.is.a('string');",
+									"        pm.expect(jsonData.content[0]).to.have.property('subtitle').that.is.a('string');",
+									"        pm.expect(jsonData.content[0]).to.have.property('content').that.is.a('string');",
+									"        pm.expect(jsonData.content[0]).to.have.property('userId').that.is.a('number');",
+									"        pm.expect(jsonData.content[0]).to.have.property('username').that.is.a('string');",
+									"        pm.expect(jsonData.content[0]).to.have.property('createdAt').that.is.a('string');",
+									"        pm.expect(jsonData.content[0]).to.have.property('likeCount').that.is.a('number');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "X-Auth-User-Id",
+								"value": "{{userId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v2/blogs?userIds=1,2&page=0&size=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"blogs"
+							],
+							"query": [
+								{
+									"key": "userIds",
+									"value": "1,2"
+								},
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Blog",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Delete Blog - Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "X-Auth-User-Id",
+								"value": "{{userId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v2/blogs/{{blogId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"blogs",
+								"{{blogId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Comment Service",
+			"item": [
+				{
+					"name": "Add Comment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Add Comment - Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Add Comment - Response has commentId\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.id).to.be.a('number');",
+									"    pm.expect(jsonData.blogId).to.be.a('number');",
+									"    pm.expect(jsonData.userId).to.be.a('number');",
+									"    pm.expect(jsonData.content).to.be.a('string');",
+									"    pm.collectionVariables.set(\"commentId\", jsonData.id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"blogId\": {{blogId}},\n  \"content\": \"Great post!\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v2/comments",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"comments"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Comment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Get Comment - Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Get Comment - Response has comment details\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.id).to.be.a('number');",
+									"    pm.expect(jsonData.blogId).to.be.a('number');",
+									"    pm.expect(jsonData.userId).to.be.a('number');",
+									"    pm.expect(jsonData.content).to.be.a('string');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v2/comments/{{commentId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"comments",
+								"{{commentId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Comments Count",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Get Comment - Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Get Comment - Response has comment details\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.id).to.be.a('number');",
+									"    pm.expect(jsonData.blogId).to.be.a('number');",
+									"    pm.expect(jsonData.userId).to.be.a('number');",
+									"    pm.expect(jsonData.content).to.be.a('string');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v2/comments/{{commentId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"comments",
+								"{{commentId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Comment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Delete Comment - Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "X-Auth-User-Id",
+								"value": "{{userId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v2/comments/{{commentId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"comments",
+								"{{commentId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Comments",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Get All Comments - Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Get All Comments - Response has paginated content\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.content).to.be.an('array');",
+									"    pm.expect(jsonData.pageNumber).to.be.a('number');",
+									"    pm.expect(jsonData.pageSize).to.be.a('number');",
+									"    pm.expect(jsonData.totalElements).to.be.a('number');",
+									"    pm.expect(jsonData.totalPages).to.be.a('number');",
+									"    pm.expect(jsonData.last).to.be.a('boolean');",
+									"    if (jsonData.content.length > 0) {",
+									"        pm.expect(jsonData.content[0]).to.have.property('id').that.is.a('number');",
+									"        pm.expect(jsonData.content[0]).to.have.property('blogId').that.is.a('number');",
+									"        pm.expect(jsonData.content[0]).to.have.property('userId').that.is.a('number');",
+									"        pm.expect(jsonData.content[0]).to.have.property('content').that.is.a('string');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "X-Auth-User-Id",
+								"value": "{{userId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v2/comments/blog/{{blogId}}?page=0&size=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"comments",
+								"blog",
+								"{{blogId}}"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Reaction Service",
+			"item": [
+				{
+					"name": "Add Reaction",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Add Reaction - Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Add Reaction - Response has reactionId\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.id).to.be.a('number');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"blogId\": {{blogId}},\n  \"type\": \"LIKE\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v2/reactions",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"reactions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Reaction",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Add Reaction - Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Add Reaction - Response has reactionId\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.id).to.be.a('number');",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v2/reactions?{{blogId}}&type=LIKE",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"reactions"
+							],
+							"query": [
+								{
+									"key": "{{blogId}}",
+									"value": null
+								},
+								{
+									"key": "type",
+									"value": "LIKE"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080"
+		},
+		{
+			"key": "token",
+			"value": ""
+		},
+		{
+			"key": "userId",
+			"value": ""
+		},
+		{
+			"key": "blogId",
+			"value": "1"
+		},
+		{
+			"key": "commentId",
+			"value": ""
+		}
+	]
 }

@@ -1,7 +1,7 @@
 package com.dailydiaries.service;
 
-import com.dailydiaries.entity.Blog;
 import com.dailydiaries.entity.BlogPageResponse;
+import com.dailydiaries.entity.BlogResponse;
 import com.dailydiaries.entity.Follower;
 import com.dailydiaries.repository.FollowerRepository;
 import org.slf4j.Logger;
@@ -40,7 +40,7 @@ public class FeedService {
         this.restTemplate = restTemplate;
     }
 
-    public Page<Blog> getFeed(Long userId, int page, int size, String authUserId) {
+    public Page<BlogResponse> getFeed(Long userId, int page, int size, String authUserId) {
         logger.debug("Fetching feed for userId: {}, page: {}, size: {}", userId, page, size);
 
         // Fetch followed user IDs
@@ -135,5 +135,15 @@ public class FeedService {
 
         followerRepository.delete(follower);
         logger.info("User {} successfully unfollowed user {}", followerId, followedId);
+    }
+
+    public long getFollowingCount(Long userId) {
+        logger.debug("Fetching following count for user: {}", userId);
+        return followerRepository.countByFollowerId(userId);
+    }
+
+    public long getFollowersCount(Long userId) {
+        logger.debug("Fetching followers count for user: {}", userId);
+        return followerRepository.countByFollowedId(userId);
     }
 }

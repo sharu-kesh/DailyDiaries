@@ -1,35 +1,40 @@
 package com.dailydiaries.service;
 
 import com.dailydiaries.entity.Blog;
+import com.dailydiaries.entity.User;
 import com.dailydiaries.repository.BlogRepository;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class BlogService {
+
     private static final Logger logger = LoggerFactory.getLogger(BlogService.class);
+
     private final BlogRepository blogRepository;
+    private final RestTemplate restTemplate;
 
-    public BlogService(BlogRepository blogRepository) {
+    public BlogService(BlogRepository blogRepository, RestTemplate restTemplate) {
         this.blogRepository = blogRepository;
+        this.restTemplate = restTemplate;
     }
 
-    public Page<Blog> findBlogsByUserIds(List<Long> userIds, PageRequest pageRequest) {
-        return blogRepository.findByUserIdIn(userIds, pageRequest);
-    }
-
-    public Blog createBlog(String title, String content, Long userId) {
-        Blog blog = new Blog();
-        blog.setTitle(title);
-        blog.setContent(content);
+    public Blog createBlog(Blog blog, Long userId) {
+        logger.debug("Creating blog for userId: {}", userId);
         blog.setUserId(userId);
+        blog.setCreatedAt(LocalDateTime.now());
+        blog.setLikeCount(0L);
         return blogRepository.save(blog);
     }
 
@@ -48,5 +53,31 @@ public class BlogService {
 
         blogRepository.delete(blog);
         logger.info("Blog {} deleted successfully", id);
+    }
+
+    public Page<BlogResponse> getBlogsByUserIds(List<Long> userIds, Pageable pageable) {
+        logger.debug("Fetching blogs for userIds: {}", userIds);
+        Page<Blog> blogs = blogRepository.findByUserIdIn(userIds, pageable);
+        List<BlogResponse> blogResponses = blogs.getContent().stream()
+                .map(blog -> {
+                    User user = restTemplate.getForObject(
+                            "http://localhost:8081/api/v2/users/" + blog.getUserId(),
+                            User.class
+                    );
+                    String username = user != null ? user.getUsername() : "Unknown";
+                    return new BlogResponse(
+                            blog.getId(),
+                            blog.getTitle(),
+                            blog.getSubtitle(),
+                            blog.getTitleImage(),
+                            blog.getContent(),
+                            blog.getUserId(),
+                            username,
+                            blog.getCreatedAt(),
+                            blog.getLikeCount()
+                    );
+                })
+                .collect(Collectors.toList());
+        return new PageImpl<>(blogResponses, pageable, blogs.getTotalElements());
     }
 }

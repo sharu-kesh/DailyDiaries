@@ -61,4 +61,9 @@ public class CommentService {
         logger.debug("Fetching comments for blogId: {}", blogId);
         return commentRepository.findByBlogId(blogId, pageable);
     }
+
+    public long getCommentsCountByBlogId(Long blogId) {
+        logger.debug("Fetching Comments count for BlogId: {}", blogId);
+        return commentRepository.countByBlogId(blogId);
+    }
 }

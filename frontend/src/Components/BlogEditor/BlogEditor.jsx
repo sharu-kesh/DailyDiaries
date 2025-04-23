@@ -285,6 +285,7 @@ function BlogEditor() {
     setIsPublishing(true);
     const blogData = { title, subtitle, titleImage, content };
     try {
+      console.log(blogData)
       const response = await axios.post('http://localhost:8080/api/blogs', blogData);
       console.log('Blog published:', response.data);
       alert('Blog published successfully!');
@@ -293,6 +294,7 @@ function BlogEditor() {
       console.error('Error publishing blog:', error);
       alert('Failed to publish blog');
     } finally {
+      localStorage.removeItem('blogDraft');
       setIsPublishing(false);
     }
   };

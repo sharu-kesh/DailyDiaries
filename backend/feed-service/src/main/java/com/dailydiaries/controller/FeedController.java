@@ -1,6 +1,6 @@
 package com.dailydiaries.controller;
 
-import com.dailydiaries.entity.Blog;
+import com.dailydiaries.entity.BlogResponse;
 import com.dailydiaries.service.FeedService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,12 +21,12 @@ public class FeedController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<Blog>> getFeed(
+    public ResponseEntity<Page<BlogResponse>> getFeed(
             @RequestHeader("X-Auth-User-Id") Long userId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         logger.debug("Received GET /api/v2/feed for userId: {}, page: {}, size: {}", userId, page, size);
-        Page<Blog> feed = feedService.getFeed(userId, page, size, userId.toString());
+        Page<BlogResponse> feed = feedService.getFeed(userId, page, size, userId.toString());
         return ResponseEntity.ok(feed);
     }
 
@@ -46,5 +46,21 @@ public class FeedController {
         logger.debug("Received POST /api/v2/feed/{}/unfollow for followerId: {}", followedId, followerId);
         feedService.unfollow(followerId, followedId);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/getFollowers")
+    public ResponseEntity<Long> getFollowers(
+            @RequestHeader("X-Auth-User-Id") Long userId) {
+        logger.debug("Received GET /getFollowers for userId: {}", userId);
+        Long followersCount = feedService.getFollowersCount(userId);
+        return ResponseEntity.ok(followersCount);
+    }
+
+    @GetMapping("/getFollowings")
+    public ResponseEntity<Long> getFollowings(
+            @RequestHeader("X-Auth-User-Id") Long userId) {
+        logger.debug("Received GET /getFollowings for userId: {}", userId);
+        Long followingsCount = feedService.getFollowingCount(userId);
+        return ResponseEntity.ok(followingsCount);
     }
 }
