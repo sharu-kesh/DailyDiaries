@@ -7,6 +7,7 @@ import {
 } from 'react-icons/fa';
 import { MdFormatSize } from 'react-icons/md';
 import './BlogEditor.css';
+import { BASEURL } from '../../constants';
 
 function BlogEditor() {
   const editorRef = useRef(null);
@@ -285,8 +286,15 @@ function BlogEditor() {
     setIsPublishing(true);
     const blogData = { title, subtitle, titleImage, content };
     try {
-      console.log(blogData)
-      const response = await axios.post('http://localhost:8080/api/blogs', blogData);
+      console.log(blogData);
+      const url = `${BASEURL}/blogs`;
+      const response = await axios.post(url, blogData, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      
       console.log('Blog published:', response.data);
       alert('Blog published successfully!');
       localStorage.removeItem('blogDraft');

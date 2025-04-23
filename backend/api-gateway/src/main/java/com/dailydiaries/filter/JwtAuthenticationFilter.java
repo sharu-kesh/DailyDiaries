@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -14,7 +15,6 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import javax.crypto.SecretKey;
-import java.util.Objects;
 
 @Component
 public class JwtAuthenticationFilter implements GatewayFilter {
@@ -32,9 +32,14 @@ public class JwtAuthenticationFilter implements GatewayFilter {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
         String path = exchange.getRequest().getURI().getPath();
         logger.debug("Processing request for path: {}", path);
+
+        // Skip authentication for OPTIONS requests (CORS preflight)
+        if (exchange.getRequest().getMethod() == HttpMethod.OPTIONS) {
+            logger.debug("Allowing CORS preflight request for {}", path);
+            return chain.filter(exchange);
+        }
 
         // Allow public endpoints
         if (path.equals("/api/v2/users/register") || path.equals("/api/v2/users/token")) {
@@ -42,6 +47,7 @@ public class JwtAuthenticationFilter implements GatewayFilter {
             return chain.filter(exchange);
         }
 
+        String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             logger.warn("Missing or invalid Authorization header for path: {}", path);
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);

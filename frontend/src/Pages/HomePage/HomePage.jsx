@@ -1,104 +1,18 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './HomePage.css';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { BASEURL } from '../../constants';
 
-// Mock data for demonstration
-const mockArticles = [
-  {
-    id: 1,
-    title: "How I'd learn ML in 2025 (if I could start over)",
-    subtitle: "All you need to learn ML in 2025 is a laptop and a list of the steps you must take.",
-    author: "Boris Meinardus",
-    publication: "Towards AI",
-    date: "Jan 2",
-    readingTime: "5 min read",
-    likes: "1.7K",
-    likesCount: 1700,
-    comments: 47,
-    commentsList: [
-      { id: 1, author: "Sarah Chen", text: "This is exactly what I needed! Just starting my ML journey.", date: "Jan 3" },
-      { id: 2, author: "Mike Johnson", text: "Great breakdown of the learning path. I'd add that practicing with real datasets is crucial.", date: "Jan 4" }
-    ],
-    image: "https://placeholder.com/300x200",
-    verified: false
-  },
-  {
-    id: 2,
-    title: "Agentic AI: Building Autonomous Systems from Scratch",
-    subtitle: "A Step-by-Step Guide to Creating Multi-Agent Frameworks in the Age of Generative AI",
-    author: "Luis Roque",
-    publication: "TDS Archive",
-    date: "Dec 13, 2024",
-    readingTime: "8 min read",
-    likes: "900",
-    likesCount: 900,
-    comments: 21,
-    commentsList: [
-      { id: 1, author: "Alex Rivera", text: "The multi-agent approach is fascinating. Have you tested this with complex systems?", date: "Dec 14" }
-    ],
-    image: "https://placeholder.com/300x200",
-    verified: true
-  },
-  {
-    id: 3,
-    title: "Yes, You Can Still Land a Junior Developer Role",
-    subtitle: "5 proven strategies that worked for my bootcamp students",
-    author: "Kate Angelopoulos",
-    publication: "Stackademic",
-    date: "Dec 5, 2024",
-    readingTime: "7 min read",
-    likes: "1.2K",
-    likesCount: 1200,
-    comments: 35,
-    commentsList: [
-      { id: 1, author: "James Lee", text: "Your advice on building a portfolio really helped me land my first dev job!", date: "Dec 7" },
-      { id: 2, author: "Priya Patel", text: "I'm struggling with technical interviews. Any specific advice?", date: "Dec 8" }
-    ],
-    image: "https://placeholder.com/300x200",
-    verified: false
-  }
+const recommendedTopics = [
+  'Writing',
+  'Cryptocurrency',
+  'Politics',
+  'Relationships',
+  'Business',
+  'Psychology',
+  'Health',
 ];
-
-// Generate more mock data for demonstration
-const generateMoreArticles = (startId, count) => {
-  const topics = ["Machine Learning", "Web Development", "Career Advice", "Programming", "AI", "Data Science"];
-  const authors = ["Maya Wilson", "Alex Rodriguez", "Sanjay Patel", "Emma Chen", "Ibrahim Ahmed", "Sophia Park"];
-  const publications = ["Tech Insights", "Dev Daily", "AI Now", "Code Masters", "Future Tech", "Developer's Journal"];
-  
-  return Array(count).fill().map((_, index) => {
-    const id = startId + index;
-    const likesCount = Math.floor(Math.random() * 2000) + 100;
-    const commentsCount = Math.floor(Math.random() * 50) + 1;
-    const topic = topics[Math.floor(Math.random() * topics.length)];
-    const author = authors[Math.floor(Math.random() * authors.length)];
-    const publication = publications[Math.floor(Math.random() * publications.length)];
-    
-    return {
-      id,
-      title: `${topic} Insights: The Future of ${topic} in 2025`,
-      subtitle: `Exploring the latest advancements and trends in ${topic.toLowerCase()} that are shaping the industry.`,
-      author,
-      publication,
-      date: `Apr ${Math.floor(Math.random() * 20) + 1}`,
-      readingTime: `${Math.floor(Math.random() * 10) + 3} min read`,
-      likes: likesCount > 1000 ? `${(likesCount / 1000).toFixed(1)}K` : likesCount.toString(),
-      likesCount,
-      comments: commentsCount,
-      commentsList: Array(Math.min(commentsCount, 3)).fill().map((_, i) => ({
-        id: i + 1,
-        author: authors[Math.floor(Math.random() * authors.length)],
-        text: `This is a great article about ${topic.toLowerCase()}. I've learned so much!`,
-        date: `Apr ${Math.floor(Math.random() * 20) + 1}`
-      })),
-      image: "https://placeholder.com/300x200",
-      verified: Math.random() > 0.7
-    };
-  });
-};
-
-
-
-const recommendedTopics = ["Writing", "Cryptocurrency", "Politics", "Relationships", "Business", "Psychology", "Health"];
 
 const BlogFeed = () => {
   const navigate = useNavigate();
@@ -109,180 +23,395 @@ const BlogFeed = () => {
   const [commentInputs, setCommentInputs] = useState({});
   const [showCommentSections, setShowCommentSections] = useState({});
   const [currentUser] = useState({
-    name: "Current User",
-    avatar: "https://placeholder.com/40x40"
+    name: localStorage.getItem('userName') || 'Anonymous',
+    avatar: 'https://placeholder.com/40x40',
   });
   const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
-  
+
   // Reference for intersection observer
-  const observer = useRef();
   const loadingRef = useRef(null);
 
-  const handleArticleClick = (articleId) => {
-    navigate(`/article/${articleId}`);
+  const computeReadTime = (content) => {
+    const text = content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+    const words = text.split(' ').filter((word) => word.length > 0);
+    const count = words.length;
+    const minutes = Math.ceil(count / 200);
+    return `${minutes} min read`;
   };
-  
+
+  const handleArticleClick = (articleId) => {
+    const selectedArticle = articles.find((article) => article.id === parseInt(articleId));
+    navigate(`/article/${articleId}`, { state: { article: selectedArticle } });
+  };
+
+  // Initialize states for user interactions based on articles
+  const initializeInteractionStates = (newArticles) => {
+    const newLikes = { ...userLikes };
+    const newBookmarks = { ...userBookmarks };
+    const newCommentInputs = { ...commentInputs };
+    const newCommentSections = { ...showCommentSections };
+
+    newArticles.forEach((article) => {
+      if (!(article.id in newLikes)) newLikes[article.id] = false;
+      if (!(article.id in newBookmarks)) newBookmarks[article.id] = false;
+      if (!(article.id in newCommentInputs)) newCommentInputs[article.id] = '';
+      if (!(article.id in newCommentSections)) newCommentSections[article.id] = false;
+    });
+
+    setUserLikes(newLikes);
+    setUserBookmarks(newBookmarks);
+    setCommentInputs(newCommentInputs);
+    setShowCommentSections(newCommentSections);
+  };
+
   // Fetch initial data
   useEffect(() => {
-    setArticles(mockArticles);
-    
-    // Initialize states for user interactions
-    const initialLikes = {};
-    const initialBookmarks = {};
-    const initialCommentInputs = {};
-    const initialCommentSections = {};
-    
-    mockArticles.forEach(article => {
-      initialLikes[article.id] = false;
-      initialBookmarks[article.id] = false;
-      initialCommentInputs[article.id] = '';
-      initialCommentSections[article.id] = false;
-    });
-    
-    setUserLikes(initialLikes);
-    setUserBookmarks(initialBookmarks);
-    setCommentInputs(initialCommentInputs);
-    setShowCommentSections(initialCommentSections);
+    const fetchBlogs = async () => {
+      setLoading(true);
+      try {
+        const url = `${BASEURL}/feed?page=${page}&size=3`;
+        const response = await axios.get(url, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
+
+        if (response?.status !== 200) {
+          throw new Error('Failed to fetch blogs');
+        }
+
+        const blogs = response.data.content || [];
+        const mappedArticles = blogs.map((blog) => ({
+          id: blog.id,
+          title: blog.title,
+          subtitle: blog.subtitle,
+          image: blog.titleImage || 'https://via.placeholder.com/150',
+          publication: 'MyBlogPlatform',
+          readingTime: computeReadTime(blog.content),
+          author: blog.username,
+          date: new Date(blog.createdAt).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+          }),
+          views: 0,
+          comments: 0,
+          commentsList: [],
+          verified: Math.random() >= 0.5,
+          content: blog.content,
+          likes: '0',
+          likesCount: 0,
+        }));
+
+        setArticles(mappedArticles);
+        initializeInteractionStates(mappedArticles);
+        setPage((prev) => prev + 1);
+        setHasMore(blogs.length > 0);
+      } catch (err) {
+        console.error('Error fetching blogs:', err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBlogs();
   }, []);
 
   // Function to load more data
   const loadMoreArticles = useCallback(async () => {
     if (loading || !hasMore) return;
-    
+
     setLoading(true);
-    
+
     try {
-      // Simulate API call with setTimeout
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Generate new mock articles
-      const newArticles = generateMoreArticles(articles.length + 1, 3);
-      
+      const url = `${BASEURL}/feed?page=${page}&size=2`;
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+
+      console.log('Loading more articles:', { page, response });
+
+      if (response?.status !== 200) {
+        throw new Error('Failed to fetch blogs');
+      }
+
+      const blogs = response.data.content || [];
+      const newArticles = blogs.map((blog) => ({
+        id: blog.id,
+        title: blog.title,
+        subtitle: blog.subtitle,
+        image: blog.titleImage || 'https://via.placeholder.com/150',
+        publication: 'MyBlogPlatform',
+        readingTime: computeReadTime(blog.content),
+        author: blog.username,
+        date: new Date(blog.createdAt).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        }),
+        views: 0,
+        comments: 0,
+        commentsList: [],
+        verified: Math.random() >= 0.5,
+        content: blog.content,
+        likes: '0',
+        likesCount: 0,
+      }));
+
       if (newArticles.length === 0) {
         setHasMore(false);
       } else {
-        setArticles(prevArticles => [...prevArticles, ...newArticles]);
-        
-        // Initialize states for new articles
-        const newLikes = { ...userLikes };
-        const newBookmarks = { ...userBookmarks };
-        const newCommentInputs = { ...commentInputs };
-        const newCommentSections = { ...showCommentSections };
-        
-        newArticles.forEach(article => {
-          newLikes[article.id] = false;
-          newBookmarks[article.id] = false;
-          newCommentInputs[article.id] = '';
-          newCommentSections[article.id] = false;
-        });
-        
-        setUserLikes(newLikes);
-        setUserBookmarks(newBookmarks);
-        setCommentInputs(newCommentInputs);
-        setShowCommentSections(newCommentSections);
-        
-        setPage(prevPage => prevPage + 1);
+        setArticles((prevArticles) => [...prevArticles, ...newArticles]);
+        initializeInteractionStates(newArticles);
+        setPage((prev) => prev + 1);
       }
     } catch (error) {
-      console.error("Error loading more articles:", error);
+      console.error('Error loading more articles:', error);
     } finally {
       setLoading(false);
     }
-  }, [articles.length, loading, hasMore, userLikes, userBookmarks, commentInputs, showCommentSections]);
+  }, [loading, hasMore, page]);
 
   // Set up intersection observer for infinite scroll
   useEffect(() => {
-    const currentObserver = new IntersectionObserver(
-      entries => {
-        if (entries[0].isIntersecting && !loading) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !loading && hasMore) {
+          console.log('Intersection observed, loading more articles...');
           loadMoreArticles();
         }
       },
       { threshold: 0.1 }
     );
-    
-    if (loadingRef.current) {
-      currentObserver.observe(loadingRef.current);
+
+    const currentLoadingRef = loadingRef.current;
+    if (currentLoadingRef) {
+      console.log('Observing loadingRef:', currentLoadingRef);
+      observer.observe(currentLoadingRef);
     }
-    
+
     return () => {
-      if (loadingRef.current) {
-        currentObserver.unobserve(loadingRef.current);
+      if (currentLoadingRef) {
+        console.log('Unobserving loadingRef:', currentLoadingRef);
+        observer.unobserve(currentLoadingRef);
       }
     };
-  }, [loadMoreArticles, loading]);
+  }, [loadMoreArticles, loading, hasMore]);
 
   const handleTabClick = (tab) => {
     setActiveTab(tab);
-    // In a real application, you would fetch different data based on the selected tab
-    setArticles(mockArticles);
-    setPage(1);
+    setPage(0);
     setHasMore(true);
+    setArticles([]);
   };
 
   const toggleLike = (articleId) => {
-    setUserLikes(prev => {
-      const newLikes = { ...prev, [articleId]: !prev[articleId] };
-      return newLikes;
-    });
-    
-    setArticles(prev => {
-      return prev.map(article => {
-        if (article.id === articleId) {
-          const currentLikes = parseInt(article.likesCount);
-          const newLikesCount = userLikes[articleId] ? currentLikes - 1 : currentLikes + 1;
-          const displayLikes = newLikesCount >= 1000 ? `${(newLikesCount / 1000).toFixed(1)}K` : newLikesCount.toString();
-          
-          return {
-            ...article,
-            likes: displayLikes,
-            likesCount: newLikesCount
-          };
+    const willLike = !userLikes[articleId];
+    const url = `${BASEURL}/reactions`;
+
+    if (willLike) {
+      axios
+        .post(
+          url,
+          { blogId: articleId, type: 'LIKE' },
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+          }
+        )
+        .then((res) => {
+          if (res?.status === 200) {
+            setArticles((prev) =>
+              prev.map((article) => {
+                if (article.id === articleId) {
+                  const currentLikes = parseInt(article.likesCount || 0);
+                  const newLikesCount = willLike ? currentLikes + 1 : currentLikes - 1;
+                  const displayLikes =
+                    newLikesCount >= 1000
+                      ? `${(newLikesCount / 1000).toFixed(1)}K`
+                      : newLikesCount.toString();
+
+                  return {
+                    ...article,
+                    likes: displayLikes,
+                    likesCount: newLikesCount,
+                  };
+                }
+                return article;
+              })
+            );
+
+            setUserLikes((prev) => ({ ...prev, [articleId]: willLike }));
+          }
+        })
+        .catch((err) => console.error('Error liking article:', err));
+    } else {
+      axios
+        .delete(`${url}?blogId=${articleId}&type=LIKE`, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        })
+        .then((res) => {
+          if (res?.status === 200) {
+            setArticles((prev) =>
+              prev.map((article) => {
+                if (article.id === articleId) {
+                  const currentLikes = parseInt(article.likesCount || 0);
+                  const newLikesCount = willLike ? currentLikes + 1 : currentLikes - 1;
+                  const displayLikes =
+                    newLikesCount >= 1000
+                      ? `${(newLikesCount / 1000).toFixed(1)}K`
+                      : newLikesCount.toString();
+
+                  return {
+                    ...article,
+                    likes: displayLikes,
+                    likesCount: newLikesCount,
+                  };
+                }
+                return article;
+              })
+            );
+
+            setUserLikes((prev) => ({ ...prev, [articleId]: willLike }));
+          }
+        })
+        .catch((err) => console.error('Error unliking article:', err));
+    }
+  };
+
+  const toggleBookmark = async (articleId) => {
+    try {
+      const userId = localStorage.getItem('userId');
+      const url = `${BASEURL}/users/${userId}/saved-blogs`;
+      const res = await axios.post(
+        url,
+        { blogId: articleId },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            'X-Auth-User-Id': userId,
+          },
         }
-        return article;
+      );
+
+      if (res?.status === 200) {
+        setUserBookmarks((prev) => ({ ...prev, [articleId]: !prev[articleId] }));
+      }
+    } catch (err) {
+      console.error('Error bookmarking article:', err);
+    }
+  };
+
+  const toggleCommentSection = async (articleId) => {
+    const article = articles.find((article) => article.id === articleId);
+    if (article?.comments > 0) {
+      setShowCommentSections((prev) => ({ ...prev, [articleId]: !prev[articleId] }));
+      return;
+    }
+
+    const userId = localStorage.getItem('userId');
+    const url = `${BASEURL}/comments/blog/${articleId}?page=0&size=5`;
+
+    try {
+      const res = await axios.get(url, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'X-Auth-User-Id': userId,
+        },
       });
-    });
-  };
 
-  const toggleBookmark = (articleId) => {
-    setUserBookmarks(prev => ({ ...prev, [articleId]: !prev[articleId] }));
-  };
+      const comments = res.data.content || [];
+      const newComments = comments.map((comment) => ({
+        id: comment.id || Date.now(),
+        author: comment.username || 'Anonymous',
+        text: comment.content,
+        date: new Date(comment.createdAt).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+        }),
+      }));
 
-  const toggleCommentSection = (articleId) => {
-    setShowCommentSections(prev => ({ ...prev, [articleId]: !prev[articleId] }));
+      setArticles((prev) =>
+        prev.map((article) => {
+          if (article.id === articleId) {
+            const updatedCommentsList = [...article.commentsList, ...newComments];
+            return {
+              ...article,
+              commentsList: updatedCommentsList,
+              comments: updatedCommentsList.length,
+            };
+          }
+          return article;
+        })
+      );
+
+      setShowCommentSections((prev) => ({ ...prev, [articleId]: !prev[articleId] }));
+    } catch (err) {
+      console.error('Error fetching comments:', err);
+    }
   };
 
   const handleCommentInputChange = (articleId, value) => {
-    setCommentInputs(prev => ({ ...prev, [articleId]: value }));
+    setCommentInputs((prev) => ({ ...prev, [articleId]: value }));
   };
 
-  const submitComment = (articleId) => {
-    if (!commentInputs[articleId].trim()) return;
-    
-    const newComment = {
-      id: Date.now(),
-      author: currentUser.name,
-      text: commentInputs[articleId],
-      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-    };
-    
-    setArticles(prev => {
-      return prev.map(article => {
-        if (article.id === articleId) {
-          const updatedCommentsList = [...article.commentsList, newComment];
-          return {
-            ...article,
-            commentsList: updatedCommentsList,
-            comments: updatedCommentsList.length
-          };
+  const submitComment = async (articleId) => {
+    if (!commentInputs[articleId]?.trim()) return;
+
+    const url = `${BASEURL}/comments`;
+    try {
+      const res = await axios.post(
+        url,
+        {
+          blogId: articleId,
+          content: commentInputs[articleId],
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
         }
-        return article;
-      });
-    });
-    
-    setCommentInputs(prev => ({ ...prev, [articleId]: '' }));
+      );
+
+      if (res?.status === 200) {
+        const newComment = {
+          id: Date.now(),
+          author: currentUser.name,
+          text: commentInputs[articleId],
+          date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        };
+
+        setArticles((prev) =>
+          prev.map((article) => {
+            if (article.id === articleId) {
+              const updatedCommentsList = [...article.commentsList, newComment];
+              return {
+                ...article,
+                commentsList: updatedCommentsList,
+                comments: updatedCommentsList.length,
+              };
+            }
+            return article;
+          })
+        );
+
+        setCommentInputs((prev) => ({ ...prev, [articleId]: '' }));
+      }
+    } catch (err) {
+      console.error('Error posting comment:', err);
+    }
   };
 
   return (
@@ -291,38 +420,38 @@ const BlogFeed = () => {
         <nav className="feed-navigation">
           <button className="add-content-button">+</button>
           <div className="tabs">
-            <button 
-              className={`tab ${activeTab === 'for-you' ? 'active' : ''}`} 
+            <button
+              className={`tab ${activeTab === 'for-you' ? 'active' : ''}`}
               onClick={() => handleTabClick('for-you')}
             >
               For you
             </button>
-            <button 
-              className={`tab ${activeTab === 'following' ? 'active' : ''}`} 
+            <button
+              className={`tab ${activeTab === 'following' ? 'active' : ''}`}
               onClick={() => handleTabClick('following')}
             >
               Following
             </button>
-            <button 
-              className={`tab ${activeTab === 'featured' ? 'active' : ''}`} 
+            <button
+              className={`tab ${activeTab === 'featured' ? 'active' : ''}`}
               onClick={() => handleTabClick('featured')}
             >
               Featured <span className="new-badge">New</span>
             </button>
-            <button 
-              className={`tab ${activeTab === 'entrepreneurship' ? 'active' : ''}`} 
+            <button
+              className={`tab ${activeTab === 'entrepreneurship' ? 'active' : ''}`}
               onClick={() => handleTabClick('entrepreneurship')}
             >
               Entrepreneurship
             </button>
-            <button 
-              className={`tab ${activeTab === 'react' ? 'active' : ''}`} 
+            <button
+              className={`tab ${activeTab === 'react' ? 'active' : ''}`}
               onClick={() => handleTabClick('react')}
             >
               React
             </button>
-            <button 
-              className={`tab ${activeTab === 'software-engineering' ? 'active' : ''}`} 
+            <button
+              className={`tab ${activeTab === 'software-engineering' ? 'active' : ''}`}
               onClick={() => handleTabClick('software-engineering')}
             >
               Software Engineering
@@ -331,93 +460,131 @@ const BlogFeed = () => {
         </nav>
 
         <div className="articles-container">
-          {articles.map(article => (
+          {articles.map((article) => (
             <article className="article-card" key={article.id}>
-              <div className="article-content"
-              onClick={() => handleArticleClick(article.id)}>
+              <div className="article-content" onClick={() => handleArticleClick(article.id)}>
                 <div className="article-author">
                   <div className="author-image-container">
                     <div className="author-avatar"></div>
                   </div>
                   <div className="author-info">
-                    <span>In {article.publication} by {article.author}</span>
+                    <span>
+                      In {article.publication} by {article.author}
+                    </span>
                     {article.verified && <span className="verified-badge">✓</span>}
                   </div>
                 </div>
-                
+
                 <div className="article-main">
                   <div className="article-text">
                     <h2 className="article-title">{article.title}</h2>
                     <p className="article-subtitle">{article.subtitle}</p>
-                    
+
                     <div className="article-meta">
                       <span className="article-date">{article.date}</span>
                       <span className="article-reading-time">{article.readingTime}</span>
-                      <span className="article-likes" >{article.likes}</span>
+                      <span className="article-likes">{article.likes}</span>
                       <span className="article-comments">{article.comments}</span>
                     </div>
                   </div>
-                  
+
                   <div className="article-image">
                     <img src={article.image} alt={article.title} />
                   </div>
                 </div>
-                
+
                 <div className="article-actions" onClick={(e) => e.stopPropagation()}>
-                  <button 
+                  <button
                     className={`action-button ${userLikes[article.id] ? 'active' : ''}`}
                     onClick={() => toggleLike(article.id)}
                   >
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" 
-                        fill={userLikes[article.id] ? "#FF4500" : "none"} 
-                        stroke={userLikes[article.id] ? "#FF4500" : "currentColor"} 
-                        strokeWidth="2"/>
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+                        fill={userLikes[article.id] ? '#FF4500' : 'none'}
+                        stroke={userLikes[article.id] ? '#FF4500' : 'currentColor'}
+                        strokeWidth="2"
+                      />
                     </svg>
                   </button>
-                  <button 
+                  <button
                     className={`action-button ${showCommentSections[article.id] ? 'active' : ''}`}
                     onClick={() => toggleCommentSection(article.id)}
                   >
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z" 
-                        fill={showCommentSections[article.id] ? "#1a8917" : "none"} 
-                        stroke={showCommentSections[article.id] ? "#1a8917" : "currentColor"} 
-                        strokeWidth="2"/>
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"
+                        fill={showCommentSections[article.id] ? '#1a8917' : 'none'}
+                        stroke={showCommentSections[article.id] ? '#1a8917' : 'currentColor'}
+                        strokeWidth="2"
+                      />
                     </svg>
                   </button>
-                  <button 
+                  <button
                     className={`action-button ${userBookmarks[article.id] ? 'active' : ''}`}
                     onClick={() => toggleBookmark(article.id)}
                   >
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z" 
-                        fill={userBookmarks[article.id] ? "#0066FF" : "none"} 
-                        stroke={userBookmarks[article.id] ? "#0066FF" : "currentColor"} 
-                        strokeWidth="2"/>
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"
+                        fill={userBookmarks[article.id] ? '#0066FF' : 'none'}
+                        stroke={userBookmarks[article.id] ? '#0066FF' : 'currentColor'}
+                        strokeWidth="2"
+                      />
                     </svg>
                   </button>
                   <button className="action-button more-button">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" fill="currentColor"/>
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                        fill="currentColor"
+                      />
                     </svg>
                   </button>
                 </div>
-                
+
                 {showCommentSections[article.id] && (
-                  <div className="article-comments-section">
+                  <div
+                    className="article-comments-section"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <h4>Comments ({article.comments})</h4>
-                    
+
                     <div className="comments-list">
-                      {article.commentsList && article.commentsList.map(comment => (
-                        <div className="comment-item" key={comment.id}>
-                          <div className="comment-author">{comment.author}</div>
-                          <div className="comment-text">{comment.text}</div>
-                          <div className="comment-date">{comment.date}</div>
-                        </div>
-                      ))}
+                      {article.commentsList &&
+                        article.commentsList.map((comment) => (
+                          <div className="comment-item" key={comment.id}>
+                            <div className="comment-author">{comment.author}</div>
+                            <div className="comment-text">{comment.text}</div>
+                            <div className="comment-date">{comment.date}</div>
+                          </div>
+                        ))}
                     </div>
-                    
+
                     <div className="add-comment">
                       <div className="current-user-avatar"></div>
                       <div className="comment-input-container">
@@ -425,14 +592,14 @@ const BlogFeed = () => {
                           type="text"
                           className="comment-input"
                           placeholder="Write a comment..."
-                          value={commentInputs[article.id]}
+                          value={commentInputs[article.id] || ''}
                           onChange={(e) => handleCommentInputChange(article.id, e.target.value)}
                           onKeyPress={(e) => e.key === 'Enter' && submitComment(article.id)}
                         />
-                        <button 
+                        <button
                           className="post-comment-button"
                           onClick={() => submitComment(article.id)}
-                          disabled={!commentInputs[article.id].trim()}
+                          disabled={!commentInputs[article.id]?.trim()}
                         >
                           Post
                         </button>
@@ -443,7 +610,7 @@ const BlogFeed = () => {
               </div>
             </article>
           ))}
-          
+
           {/* Loading indicator */}
           {hasMore && (
             <div className="loading-container" ref={loadingRef}>
@@ -453,19 +620,19 @@ const BlogFeed = () => {
                   <p>Loading more articles...</p>
                 </div>
               ) : (
-                <div className="loading-trigger"></div>
+                <div className="loading-trigger" style={{ height: '20px' }}></div>
               )}
             </div>
           )}
-          
+
           {!hasMore && articles.length > 0 && (
             <div className="end-of-feed">
               <p>You've reached the end of your feed</p>
-              <button 
+              <button
                 className="refresh-feed-button"
                 onClick={() => {
-                  setPage(1);
-                  setArticles(mockArticles);
+                  setPage(0);
+                  setArticles([]);
                   setHasMore(true);
                 }}
               >
@@ -475,8 +642,6 @@ const BlogFeed = () => {
           )}
         </div>
       </div>
-
-      
     </div>
   );
 };

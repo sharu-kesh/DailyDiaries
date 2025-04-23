@@ -1,13 +1,40 @@
 import React, { useState } from 'react';
 import { Mail, Lock, ArrowRight } from 'lucide-react';
+import axios from 'axios';
+import { BASEURL } from '../../constants';
+import { useNavigate } from 'react-router-dom';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
     // Handle login logic here
+    const url = BASEURL + "/users/token"
+        const payload = {
+          email,
+          password
+        };
+    
+        axios.post(
+          url,
+          payload
+        ).then((res) => {
+          console.log(res);
+          if(res?.status === 200) {
+            localStorage.setItem('token', res.data?.token);
+            localStorage.setItem('userId', res.data?.userId);
+            localStorage.setItem('userName', res.data?.userName);
+            localStorage.setItem('bio', res.data?.bio);
+            console.log(localStorage.getItem('token'))
+            navigate("/");
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     console.log('Login attempt with:', { email, password });
   };
 

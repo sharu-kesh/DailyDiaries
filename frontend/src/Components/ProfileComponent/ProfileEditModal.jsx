@@ -1,5 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { X, Camera } from 'lucide-react';
+import { BASEURL } from '../../constants.js'
+import axios from 'axios';
 
 const ProfileEditModal = ({ isOpen, onClose, initialUserData }) => {
   const [userData, setUserData] = useState(initialUserData || {
@@ -38,7 +40,24 @@ const ProfileEditModal = ({ isOpen, onClose, initialUserData }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     // Here you would typically send the updated data to your backend
-    console.log("Updated profile data:", userData);
+    const url = BASEURL + `/users/${localStorage.getItem('userId')}`;
+    axios.put(url, {
+      username: userData?.username,
+      bio: userData?.bio
+    }, {
+      headers: {'Authorization': `Bearer ${localStorage.getItem('token')}`}
+      }
+    ).then(res => {
+      if(res.status === 200) {
+        setUserData(prev => ({ ...prev, username: userData.username, bio: userData.bio }));
+        localStorage.setItem('userName', userData.userName);
+        localStorage.setItem('bio', userData.bio);
+        console.log("Updated profile data:", userData);
+      }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
     onClose(userData); // Close modal and pass back updated data
   };
 

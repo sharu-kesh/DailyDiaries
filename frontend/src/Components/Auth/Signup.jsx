@@ -1,15 +1,40 @@
 import React, { useState } from 'react';
 import { User, Mail, Lock, ArrowRight } from 'lucide-react';
+import axios from 'axios';
+import { BASEURL } from '../../constants';
+import { useNavigate } from 'react-router-dom';
 
 const SignupPage = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
     // Handle signup logic here
+    const url = BASEURL + "/users/register"
+    const payload = {
+      email,
+      password,
+      username: name,
+      bio: ""
+    };
+
+    axios.post(
+      url,
+      payload
+    ).then((res) => {
+      console.log(res);
+      if(res?.status === 200) {
+        navigate("/login");
+      }
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+
     console.log('Signup attempt with:', { name, email, password });
   };
 

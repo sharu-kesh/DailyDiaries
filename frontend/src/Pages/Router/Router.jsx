@@ -34,10 +34,10 @@ const Router = () => {
         element={<MainLayout />}
       >
         <Route path="/" element={<HomePage />} />
-        <Route path="/username" element={<Profile />} />
+        <Route path={`/${localStorage.getItem('userName') || "userName"}`} element={<Profile />} />
         <Route path="/create" element={<CreateBlog />} />
         {/* <Route path="/" element={<BlogFeed articles={mockArticles}  />} /> */}
-        <Route path="/article/:articleId" element={<ArticleDetail articles={mockArticles} />} />
+        <Route path="/article/:articleId" element={<ArticleDetail/>} />
       </Route>
       {/* Routes without Sidebar */}
       <Route path="/login" element={<Login />} />

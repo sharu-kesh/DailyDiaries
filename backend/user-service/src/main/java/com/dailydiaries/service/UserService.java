@@ -1,6 +1,7 @@
 package com.dailydiaries.service;
 
 import com.dailydiaries.entity.Blog;
+import com.dailydiaries.entity.LoginDTO;
 import com.dailydiaries.entity.User;
 import com.dailydiaries.repository.UserRepository;
 import io.jsonwebtoken.Jwts;
@@ -68,7 +69,7 @@ public class UserService {
                 });
     }
 
-    public String authenticate(String email, String password) {
+    public LoginDTO authenticate(String email, String password) {
         logger.debug("Authenticating user with email: {}", email);
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> {
@@ -82,11 +83,11 @@ public class UserService {
         String token = Jwts.builder()
                 .setSubject(user.getEmail())
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 24 hours
+                .setExpiration(new Date(System.currentTimeMillis() + 2592000000L)) // 30 days
                 .signWith(SECRET_KEY)
                 .compact();
         logger.info("Token generated for user: {}", email);
-        return token;
+        return new LoginDTO(user.getId(), user.getUsername(), user.getBio(), token);
     }
 
     public User updateUser(Long id, User user, Long authUserId) {
@@ -128,36 +129,39 @@ public class UserService {
             logger.warn("User not found for id: {}", userId);
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         }
-        String sql_saved_blogs = "SELECT id, content, created_at, like_count, subtitle, title, title_image, user_id\n" +
-                "\tFROM (SELECT blog_id from saved_blogs where user_id=?) as saved_blogs_for_blog_id JOIN blogs on id = blog_id ORDER BY created_at DESC; LIMIT ? OFFSET ?";
-        List<Blog> blogs = jdbcTemplate.queryForList(
+
+        // Corrected SQL query with proper parameter binding
+        String sql_saved_blogs = """
+            SELECT b.id, b.content, b.created_at, b.like_count, b.subtitle, b.title, b.title_image, b.user_id, u.username
+            FROM saved_blogs sb
+            JOIN blogs b ON b.id = sb.blog_id
+            JOIN users u ON b.user_id = u.id
+            WHERE sb.user_id = ?
+            ORDER BY b.created_at DESC
+            LIMIT ? OFFSET ?
+        """;
+
+        // Use query with RowMapper for proper object mapping
+        List<BlogResponse> blogResponses = jdbcTemplate.query(
                 sql_saved_blogs,
                 new Object[]{userId, pageable.getPageSize(), pageable.getOffset()},
-                Blog.class
+                (rs, rowNum) -> new BlogResponse(
+                        rs.getLong("id"),
+                        rs.getString("title"),
+                        rs.getString("subtitle"),
+                        rs.getString("title_image"),
+                        rs.getString("content"),
+                        rs.getLong("user_id"),
+                        rs.getString("username"),
+                        rs.getTimestamp("created_at").toLocalDateTime(),
+                        rs.getLong("like_count")
+                )
         );
-        String sql_user_name = "SELECT username FROM users WHERE id = ?";
-        List<BlogResponse> blogResponses = blogs.stream()
-                .map(blog -> {
-                    String user = jdbcTemplate.queryForObject(
-                            sql_user_name,
-                            String.class
-                    );
-                    String username = user != null ? user: "Unknown";
-                    return new BlogResponse(
-                            blog.getId(),
-                            blog.getTitle(),
-                            blog.getSubtitle(),
-                            blog.getTitleImage(),
-                            blog.getContent(),
-                            blog.getUserId(),
-                            username,
-                            blog.getCreatedAt(),
-                            blog.getLikeCount()
-                    );
-                })
-                .collect(Collectors.toList());
+
+        // Count query for total elements
         String countSql = "SELECT COUNT(*) FROM saved_blogs WHERE user_id = ?";
         Long total = jdbcTemplate.queryForObject(countSql, new Object[]{userId}, Long.class);
+
         return new PageImpl<>(blogResponses, pageable, total != null ? total : 0);
     }
 }

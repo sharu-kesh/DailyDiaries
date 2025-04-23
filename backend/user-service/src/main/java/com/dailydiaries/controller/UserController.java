@@ -1,5 +1,6 @@
 package com.dailydiaries.controller;
 
+import com.dailydiaries.entity.LoginDTO;
 import com.dailydiaries.entity.User;
 import com.dailydiaries.service.BlogResponse;
 import com.dailydiaries.service.UserService;
@@ -33,10 +34,10 @@ public class UserController {
     }
 
     @PostMapping("/token")
-    public ResponseEntity<String> loginUser(@RequestBody User user) {
+    public ResponseEntity<LoginDTO> loginUser(@RequestBody User user) {
         logger.debug("Received POST /api/v2/users/token for email: {}", user.getEmail());
-        String token = userService.authenticate(user.getEmail(), user.getPassword());
-        return ResponseEntity.ok(token);
+        LoginDTO res = userService.authenticate(user.getEmail(), user.getPassword());
+        return ResponseEntity.ok(res);
     }
 
     @GetMapping("/email/{email}")

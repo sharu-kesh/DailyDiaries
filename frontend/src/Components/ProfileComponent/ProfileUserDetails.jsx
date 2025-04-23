@@ -5,8 +5,8 @@ import ProfileEditModal from './ProfileEditModal';
 export const ProfileUserDetails = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [userData, setUserData] = useState({
-    username: "instagram_user",
-    bio: "Coffee addict | Photography lover | Hiking enthusiast",
+    username: localStorage.getItem('userName') || "instagram_user",
+    bio: localStorage.getItem('bio') || "Coffee addict | Photography lover | Hiking enthusiast",
     profilePicture: "/api/placeholder/150/150" // Replace with your image path
   });
 
@@ -22,6 +22,7 @@ export const ProfileUserDetails = () => {
       setUserData(updatedData);
     }
   };
+  
   return (
     <div style={{ padding: '50px 0 40px 0', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', width: '100%' }}>
       {/* Profile Picture */}

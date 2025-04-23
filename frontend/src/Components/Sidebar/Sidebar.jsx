@@ -12,7 +12,7 @@ const Sidebar = () => {
   const handleTabClick = (title) => {
     setActiveTab(title);
     if(title === "Profile") {
-      navigate("/username");
+      navigate(`/${localStorage.getItem('userName')}`);
     }
     else if(title === "Home") {
       navigate("/");
