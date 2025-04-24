@@ -376,6 +376,148 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Get User Profiles",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Get Blogs by User IDs - Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Get Blogs by User IDs - Response has content\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.content).to.be.an('array');",
+									"    pm.expect(jsonData.pageNumber).to.be.a('number');",
+									"    pm.expect(jsonData.pageSize).to.be.a('number');",
+									"    pm.expect(jsonData.totalElements).to.be.a('number');",
+									"    pm.expect(jsonData.totalPages).to.be.a('number');",
+									"    pm.expect(jsonData.last).to.be.a('boolean');",
+									"    if (jsonData.content.length > 0) {",
+									"        pm.expect(jsonData.content[0]).to.have.property('id').that.is.a('number');",
+									"        pm.expect(jsonData.content[0]).to.have.property('title').that.is.a('string');",
+									"        pm.expect(jsonData.content[0]).to.have.property('subtitle').that.is.a('string');",
+									"        pm.expect(jsonData.content[0]).to.have.property('content').that.is.a('string');",
+									"        pm.expect(jsonData.content[0]).to.have.property('userId').that.is.a('number');",
+									"        pm.expect(jsonData.content[0]).to.have.property('username').that.is.a('string');",
+									"        pm.expect(jsonData.content[0]).to.have.property('createdAt').that.is.a('string');",
+									"        pm.expect(jsonData.content[0]).to.have.property('likeCount').that.is.a('number');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "X-Auth-User-Id",
+								"value": "{{userId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v2/blogs?userIds=1,2&page=0&size=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"blogs"
+							],
+							"query": [
+								{
+									"key": "userIds",
+									"value": "1,2"
+								},
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All User Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Get All Comments - Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Get All Comments - Response has paginated content\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.content).to.be.an('array');",
+									"    pm.expect(jsonData.pageNumber).to.be.a('number');",
+									"    pm.expect(jsonData.pageSize).to.be.a('number');",
+									"    pm.expect(jsonData.totalElements).to.be.a('number');",
+									"    pm.expect(jsonData.totalPages).to.be.a('number');",
+									"    pm.expect(jsonData.last).to.be.a('boolean');",
+									"    if (jsonData.content.length > 0) {",
+									"        pm.expect(jsonData.content[0]).to.have.property('id').that.is.a('number');",
+									"        pm.expect(jsonData.content[0]).to.have.property('blogId').that.is.a('number');",
+									"        pm.expect(jsonData.content[0]).to.have.property('userId').that.is.a('number');",
+									"        pm.expect(jsonData.content[0]).to.have.property('content').that.is.a('string');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "X-Auth-User-Id",
+								"value": "{{userId}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v2/comments/blog/{{blogId}}?page=0&size=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"comments",
+								"blog",
+								"{{blogId}}"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -760,6 +902,61 @@
 									"key": "size",
 									"value": "10"
 								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Blogs Count",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Get Feed - Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Get Feed - Response has content\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.content).to.be.an('array');",
+									"    pm.expect(jsonData.pageNumber).to.be.a('number');",
+									"    pm.expect(jsonData.pageSize).to.be.a('number');",
+									"    pm.expect(jsonData.totalElements).to.be.a('number');",
+									"    pm.expect(jsonData.totalPages).to.be.a('number');",
+									"    pm.expect(jsonData.last).to.be.a('boolean');",
+									"    if (jsonData.content.length > 0) {",
+									"        pm.expect(jsonData.content[0]).to.have.property('id').that.is.a('number');",
+									"        pm.expect(jsonData.content[0]).to.have.property('title').that.is.a('string');",
+									"        pm.expect(jsonData.content[0]).to.have.property('content').that.is.a('string');",
+									"        pm.expect(jsonData.content[0]).to.have.property('userId').that.is.a('number');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v2/blogs/{{userId}}/getBlogsCount",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v2",
+								"blogs",
+								"{{userId}}",
+								"getBlogsCount"
 							]
 						}
 					},

@@ -117,7 +117,7 @@ const BlogFeed = () => {
     setLoading(true);
 
     try {
-      const url = `${BASEURL}/feed?page=${page}&size=2`;
+      const url = `${BASEURL}/feed?page=${page}&size=3`;
       const response = await axios.get(url, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,

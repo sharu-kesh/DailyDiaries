@@ -90,7 +90,7 @@ const ArticleDetail = () => {
       <div className="article-not-found">
         <h2>Article not found</h2>
         <p>The article you're looking for doesn't exist or has been removed.</p>
-        <button className="back-button" onClick={() => navigate('/')}>
+        <button className="back-button" onClick={() => navigate('/feed')}>
           Back to Feed
         </button>
       </div>
@@ -230,7 +230,7 @@ const ArticleDetail = () => {
   return (
     <div className="article-detail-container">
       <div className="article-detail-header">
-        <button className="back-button" onClick={() => navigate('/')}>
+        <button className="back-button" onClick={() => navigate('/feed')}>
           ← Back to Feed
         </button>
 

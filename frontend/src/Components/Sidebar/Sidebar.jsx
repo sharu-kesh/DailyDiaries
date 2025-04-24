@@ -1,28 +1,36 @@
-// Components/Sidebar/Sidebar.js
-import React from 'react';
+import React, { useState } from 'react';
 import { menu } from './SidebarConfig.js';
 import { useNavigate } from 'react-router-dom';
 import insta from './insta2.png';
 import './Sidebar.css';
 
 const Sidebar = ({ isSidebarOpen = false, toggleSidebar = () => {} }) => {
-  const [activeTab, setActiveTab] = React.useState();
+  const [activeTab, setActiveTab] = useState();
   const navigate = useNavigate();
 
   const handleTabClick = (title) => {
     setActiveTab(title);
     if (title === 'Profile') {
-      navigate(`/${localStorage.getItem('userName')}`);
+      navigate(`/${localStorage.getItem('userName') || 'user'}`);
     } else if (title === 'Home') {
-      navigate('/');
+      navigate('/feed');
     } else if (title === 'Create') {
       navigate('/create');
     } else if (title === 'Bloggers') {
       navigate('/others');
+    } else if (title === 'Logout') {
+      // Clear localStorage
+      localStorage.removeItem('userId');
+      localStorage.removeItem('userName');
+      localStorage.removeItem('bio');
+      localStorage.removeItem('token');
+      // Reset active tab and navigate to root
+      setActiveTab(null);
+      navigate('/');
     }
     // Close sidebar on mobile after clicking a menu item
-    if (!isSidebarOpen) {
-      toggleSidebar(); // Open if closed, no action if open
+    if (isSidebarOpen) {
+      toggleSidebar(); // Close if open
     }
   };
 

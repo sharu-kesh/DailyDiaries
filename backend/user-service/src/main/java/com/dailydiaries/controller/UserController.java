@@ -98,11 +98,6 @@ public class UserController {
         Pageable pageable = PageRequest.of(page, size);
         return ResponseEntity.ok(userService.getUserProfiles(pageable));
     }
-
-    @GetMapping("/{userId}")
-    public ResponseEntity<UserProfileResponse> getUserProfileById(@PathVariable Long userId) {
-        return ResponseEntity.ok(userService.getUserProfileById(userId));
-    }
 }
 
 class BlogIdRequest {

@@ -28,7 +28,7 @@ const LoginPage = () => {
           localStorage.setItem('userName', res.data?.userName);
           localStorage.setItem('bio', res.data?.bio);
           console.log(localStorage.getItem('token'));
-          navigate("/");
+          navigate("/feed");
         }
       })
       .catch((err) => {
