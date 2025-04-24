@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import '../../Pages/HomePage/ArticleDetail.css';
+import './LandPage.css';
 import tech from './tech.jpg';
 import blog from './blog.jpg';
 import travel from './travel.jpeg';

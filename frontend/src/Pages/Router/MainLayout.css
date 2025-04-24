@@ -1,0 +1,48 @@
+/* Pages/Router/MainLayout.css */
+.main-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.content-container {
+  flex: 1;
+}
+
+@media (min-width: 769px) {
+  .sidebar-container {
+    width: 20% !important; /* Always visible on desktop */
+  }
+
+  .content-container {
+    margin-left: 20% !important; /* Fixed margin for desktop */
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar-container {
+    width: 0; /* Hidden by default */
+  }
+
+  .sidebar-container.open {
+    width: 200px; /* Slide in */
+  }
+
+  .content-container {
+    margin-left: 0; /* No margin when sidebar is hidden */
+  }
+
+  .sidebar-open .content-container {
+    margin-left: 200px; /* Shift content when sidebar is open */
+  }
+}
+
+@media (max-width: 480px) {
+  .sidebar-container.open {
+    width: 180px;
+  }
+
+  .sidebar-open .content-container {
+    margin-left: 180px;
+  }
+}

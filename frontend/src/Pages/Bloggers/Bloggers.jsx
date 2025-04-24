@@ -10,9 +10,9 @@ const Bloggers = () => {
       name: 'Jane Smith',
       profilePhoto: avatar,
       recentPost: {
-        title: 'Why Blogging Matters',
-        excerpt: 'How blogging can shape your personal brand.',
-        date: 'Apr 18, 2025',
+        title: 'My Bio is myself read from me',
+        followers: '12K',
+        blogs : '12'
       },
       isFollowing: false,
     },
@@ -21,9 +21,9 @@ const Bloggers = () => {
       name: 'Alex Brown',
       profilePhoto: avatar,
       recentPost: {
-        title: 'Travel Diaries',
-        excerpt: 'A journey through the mountains of Himalayas.',
-        date: 'Apr 15, 2025',
+        title: 'My Bio is myself read from me',
+        followers: '15K',
+        blogs : '20'
       },
       isFollowing: false,
     },
@@ -68,8 +68,8 @@ const Bloggers = () => {
               <Link to={`/blog/${blogger.id}`} className="post-title">
                 {blogger.recentPost.title}
               </Link>
-              <p className="post-excerpt">{blogger.recentPost.excerpt}</p>
-              <span className="post-date">{blogger.recentPost.date}</span>
+              <p className="post-excerpt">{blogger.recentPost.followers} followers {blogger.recentPost.blogs} blogs</p>
+              {/* <span className="post-date">{blogger.recentPost.blogs} blogs</span> */}
             </div>
           </div>
         ))}

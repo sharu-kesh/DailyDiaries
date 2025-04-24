@@ -3,17 +3,8 @@ import './HomePage.css';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { BASEURL } from '../../constants';
-
-const recommendedTopics = [
-  'Writing',
-  'Cryptocurrency',
-  'Politics',
-  'Relationships',
-  'Business',
-  'Psychology',
-  'Health',
-];
-
+import techImg from './tech.jpg'
+import avatar from './avatar.jpg'
 const BlogFeed = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('for-you');
@@ -24,7 +15,7 @@ const BlogFeed = () => {
   const [showCommentSections, setShowCommentSections] = useState({});
   const [currentUser] = useState({
     name: localStorage.getItem('userName') || 'Anonymous',
-    avatar: 'https://placeholder.com/40x40',
+    avatar: avatar,
   });
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
@@ -87,7 +78,7 @@ const BlogFeed = () => {
           id: blog.id,
           title: blog.title,
           subtitle: blog.subtitle,
-          image: blog.titleImage || 'https://via.placeholder.com/150',
+          image: blog.titleImage || techImg,
           publication: 'MyBlogPlatform',
           readingTime: computeReadTime(blog.content),
           author: blog.username,
@@ -144,7 +135,7 @@ const BlogFeed = () => {
         id: blog.id,
         title: blog.title,
         subtitle: blog.subtitle,
-        image: blog.titleImage || 'https://via.placeholder.com/150',
+        image: blog.titleImage || techImg,
         publication: 'MyBlogPlatform',
         readingTime: computeReadTime(blog.content),
         author: blog.username,
@@ -418,7 +409,7 @@ const BlogFeed = () => {
     <div className="blog-feed-container">
       <div className="main-content">
         <nav className="feed-navigation">
-          <button className="add-content-button">+</button>
+          {/* <button className="add-content-button">+</button> */}
           <div className="tabs">
             <button
               className={`tab ${activeTab === 'for-you' ? 'active' : ''}`}
@@ -484,7 +475,7 @@ const BlogFeed = () => {
                       <span className="article-date">{article.date}</span>
                       <span className="article-reading-time">{article.readingTime}</span>
                       <span className="article-likes">{article.likes}</span>
-                      <span className="article-comments">{article.comments}</span>
+                      <span >{article.comments}</span>
                     </div>
                   </div>
 
