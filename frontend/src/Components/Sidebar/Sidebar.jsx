@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { IoReorderFourSharp } from "react-icons/io5";
 import { menu } from './SidebarConfig.js';
 import { useNavigate } from 'react-router-dom';
 import insta from './insta2.png';
-import './Sidebar.css'; // Import the CSS file
+import './Sidebar.css'; 
 
 const Sidebar = () => {
   const [activeTab, setActiveTab] = useState();
@@ -19,6 +18,9 @@ const Sidebar = () => {
     }
     else if(title ==="Create"){
       navigate("/create")
+    }
+    else if(title ==="Bloggers"){
+      navigate("/others")
     }
   }
   
@@ -49,7 +51,7 @@ const Sidebar = () => {
         </div>
       </div>
 
-      {/* Bottom Section - More */}
+      {/* Bottom Section - More
       <div className="sidebar-footer">
         <div className="menu-item">
           <div className="menu-icon">
@@ -57,7 +59,7 @@ const Sidebar = () => {
           </div>
           <span>More</span>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

@@ -6,9 +6,9 @@ import Profile from '../Profile/Profile';
 import CreateBlog from '../Create/CreateBlog';
 import Login from '../../Components/Auth/Login';
 import SignupPage from '../../Components/Auth/Signup';
-import { mockArticles } from '../HomePage/mockData';
 import ArticleDetail from '../HomePage/ArticleDetail';
-
+import LandPage from '../LandPage/LandPage';
+import Bloggers from '../Bloggers/Bloggers';
 // Layout component for routes with sidebar
 const MainLayout = () => (
   <div className="flex h-screen">
@@ -36,12 +36,13 @@ const Router = () => {
         <Route path="/" element={<HomePage />} />
         <Route path={`/${localStorage.getItem('userName') || "userName"}`} element={<Profile />} />
         <Route path="/create" element={<CreateBlog />} />
-        {/* <Route path="/" element={<BlogFeed articles={mockArticles}  />} /> */}
+        <Route path ="/others" element ={<Bloggers />} />
         <Route path="/article/:articleId" element={<ArticleDetail/>} />
       </Route>
       {/* Routes without Sidebar */}
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<SignupPage />} />
+      <Route path = "/land" element = {<LandPage/>} />
     </Routes>
   );
 };
