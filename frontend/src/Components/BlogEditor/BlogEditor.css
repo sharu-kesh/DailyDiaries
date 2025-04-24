@@ -1,27 +1,29 @@
+/* Create/CreateBlog.css */
 .medium-editor-container {
-  max-width: calc(100% - 20%); /* Adjust for 20% sidebar width */
   min-height: 100vh;
   font-family: 'Georgia', 'Times New Roman', Times, serif;
   color: rgba(0, 0, 0, 0.84);
-  background-color: #f3f4f6; /* Matches bg-gray-100 */
-  margin-left: 20%; /* Offset for sidebar */
-  padding: 2rem; /* Matches MainLayout p-6 */
-  width: 100%; /* Utilize full available width */
+  background-color: #f3f4f6;
+  padding: 2rem;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 800; /* Below sidebar */
 }
 
 .medium-editor-nav {
   position: fixed;
-  top: 0;
-  left: 20%; /* Offset for sidebar */
+  top: 0; /* Moved to top */
+  left: 20%; /* Align with sidebar width */
   right: 0;
-  height: 60px;
+  height: 40px; /* Reduced height for top placement */
   background-color: #fff;
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
   justify-content: flex-end;
   padding: 0 30px;
-  z-index: 1000;
+  z-index: 900; /* Below sidebar */
+  transition: left 0.3s ease-in-out;
 }
 
 .medium-editor-stats {
@@ -64,9 +66,10 @@
 }
 
 .medium-editor-content {
-  width: 100%; /* Full width of container */
-  margin: 80px auto 100px; /* Maintain top/bottom spacing */
-  padding: 0; /* Remove extra padding to let container padding handle spacing */
+  width: 100%;
+  max-width: 800px;
+  margin: 60px auto 100px; /* Adjusted for top nav */
+  padding: 0;
   position: relative;
 }
 
@@ -157,7 +160,7 @@
   padding-bottom: 12px;
   flex-wrap: wrap;
   border-bottom: none;
-  width: 100%; /* Ensure toolbar spans full width */
+  width: 100%;
 }
 
 .medium-toolbar-btn {
@@ -219,7 +222,7 @@
   color: rgba(0, 0, 0, 0.84);
   padding-bottom: 120px;
   font-family: 'Georgia', 'Times New Roman', Times, serif;
-  width: 100%; /* Full width for content */
+  width: 100%;
 }
 
 .medium-editor-field:empty:before {
@@ -263,7 +266,7 @@
   line-height: 1.58;
 }
 
-.medium-editor-field ul, 
+.medium-editor-field ul,
 .medium-editor-field ol {
   padding-left: 40px;
   margin: 35px 0;
@@ -283,7 +286,7 @@
 
 .medium-figure {
   margin: 40px 0;
-  display: table; /* Ensure proper centering container */
+  display: table;
   margin-left: auto;
   margin-right: auto;
 }
@@ -295,7 +298,7 @@
 
 .medium-figure img {
   max-width: 100%;
-  width: auto; /* Allow natural width with max constraint */
+  width: auto;
   display: block;
   margin-left: auto;
   margin-right: auto;
@@ -304,7 +307,7 @@
 
 .medium-figure iframe {
   width: 100%;
-  max-width: 800px; /* Constrain video width for centering */
+  max-width: 800px;
   height: 420px;
   display: block;
   margin-left: auto;
@@ -331,7 +334,7 @@
 .medium-editor-footer {
   position: fixed;
   bottom: 0;
-  left: 20%; /* Offset for sidebar */
+  left: 20%;
   right: 0;
   background-color: #fff;
   border-top: 1px solid rgba(0, 0, 0, 0.1);
@@ -339,169 +342,182 @@
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  z-index: 1000;
-}
-
-/* Editor content styles */
-.editor-content {
-  direction: ltr;
-}
-
-.editor-content h1 {
-  font-size: 36px;
-  font-weight: 700;
-  margin: 40px 0 20px;
-  line-height: 1.15;
-}
-
-.editor-content h2 {
-  font-size: 30px;
-  font-weight: 700;
-  margin: 35px 0 18px;
-  line-height: 1.2;
-}
-
-.editor-content p {
-  margin-bottom: 35px;
-  font-size: 22px;
-  line-height: 1.58;
-}
-
-.editor-content ul {
-  list-style-type: disc;
-  margin: 35px 0;
-  padding-left: 40px;
-  font-size: 22px;
-  line-height: 1.58;
-}
-
-.editor-content ol {
-  list-style-type: decimal;
-  margin: 35px 0;
-  padding-left: 40px;
-  font-size: 22px;
-  line-height: 1.58;
-}
-
-.editor-content li {
-  margin: 12px 0;
-}
-
-.editor-content img {
-  max-width: 100%;
-  margin: 40px 0;
-  border-radius: 4px;
-}
-
-.editor-content iframe {
-  width: 100%;
-  max-width: 800px; /* Constrain video width for centering */
-  height: 420px;
-  margin: 40px 0;
-  border-radius: 4px;
-}
-
-.editor-content a {
-  color: #1a8917;
-  text-decoration: underline;
-}
-
-.editor-content blockquote {
-  border-left: 4px solid rgba(0, 0, 0, 0.84);
-  padding-left: 24px;
-  margin: 40px 0;
-  font-style: italic;
-  color: rgba(0, 0, 0, 0.6);
-  font-size: 22px;
-  line-height: 1.58;
+  z-index: 900;
+  transition: left 0.3s ease-in-out;
 }
 
 /* Responsive styles */
 @media (max-width: 1024px) {
   .medium-editor-container {
-    max-width: 100%;
-    margin-left: 0;
     padding: 1.5rem;
   }
 
   .medium-editor-nav {
-    left: 0;
+    left: 20%;
     padding: 0 20px;
   }
 
   .medium-editor-footer {
-    left: 0;
+    left: 20%;
     padding: 12px 20px;
   }
 
   .medium-editor-content {
-    width: 100%;
-    max-width: 800px; /* Constrain width for readability on medium screens */
+    max-width: 700px;
     margin: 60px auto 80px;
   }
-  
+
   .medium-title-input {
     font-size: 36px;
   }
-  
+
   .medium-subtitle-input {
     font-size: 24px;
   }
-  
+
   .medium-editor-field {
     font-size: 20px;
+  }
+
+  .hero-image-container.has-image {
+    height: 350px;
   }
 }
 
 @media (max-width: 768px) {
-  .medium-editor-content {
-    max-width: 100%; /* Full width on smaller screens */
-    margin: 50px auto 70px;
+  .medium-editor-nav {
+    left: 0;
+    padding: 0 15px;
   }
-  
+
+  .sidebar-open .medium-editor-nav {
+    left: 200px;
+  }
+
+  .medium-editor-footer {
+    left: 0;
+    padding: 10px 15px;
+  }
+
+  .sidebar-open .medium-editor-footer {
+    left: 200px;
+  }
+
+  .medium-editor-content {
+    max-width: 100%;
+    margin: 60px auto 70px;
+  }
+
   .medium-title-input {
     font-size: 32px;
   }
-  
+
   .medium-subtitle-input {
     font-size: 20px;
   }
-  
+
   .medium-editor-field {
     font-size: 18px;
+    min-height: 400px;
   }
-  
+
   .medium-toolbar {
     gap: 6px;
+    justify-content: flex-start;
   }
-  
+
   .medium-toolbar-btn {
     width: 30px;
     height: 30px;
+    font-size: 16px;
+  }
+
+  .hero-image-container {
+    height: 150px;
+  }
+
+  .hero-image-container.has-image {
+    height: 300px;
+  }
+
+  .medium-figure iframe {
+    height: 200px;
   }
 }
 
-@media (max-width: 576px) {
+@media (max-width: 480px) {
+  .medium-editor-nav {
+    padding: 0 10px;
+  }
+
+  .sidebar-open .medium-editor-nav {
+    left: 180px;
+  }
+
+  .medium-editor-footer {
+    padding: 8px 10px;
+  }
+
+  .sidebar-open .medium-editor-footer {
+    left: 180px;
+  }
+
   .medium-editor-stats {
     gap: 10px;
     font-size: 12px;
   }
-  
+
   .medium-btn {
-    padding: 6px 16px;
+    padding: 6px 12px;
     font-size: 12px;
   }
-  
+
   .medium-title-input {
     font-size: 28px;
   }
-  
+
   .medium-subtitle-input {
     font-size: 18px;
   }
-  
+
   .medium-editor-field {
     font-size: 16px;
+    padding-bottom: 80px;
+  }
+
+  .medium-toolbar {
+    gap: 4px;
+  }
+
+  .medium-toolbar-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+
+  .medium-heading-options {
+    min-width: 140px;
+  }
+
+  .medium-heading-option {
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+
+  .hero-image-container {
+    height: 120px;
+  }
+
+  .hero-image-container.has-image {
+    height: 250px;
+  }
+
+  .medium-figure iframe {
+    height: 180px;
+  }
+
+  .medium-caption {
+    font-size: 14px;
   }
 }
 

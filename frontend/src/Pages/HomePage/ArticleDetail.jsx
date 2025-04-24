@@ -1,13 +1,16 @@
+// ArticleDetail.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import './ArticleDetail.css';
 import { BASEURL } from '../../constants';
 import axios from 'axios';
+import avatar from './avatar.jpg'
+import techImg from './tech.jpg';
 
 const ArticleDetail = () => {
   const { articleId } = useParams();
   const navigate = useNavigate();
-  const location = useLocation(); // Access navigation state
+  const location = useLocation();
   const [article, setArticle] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [userLike, setUserLike] = useState(false);
@@ -15,32 +18,28 @@ const ArticleDetail = () => {
   const [commentInput, setCommentInput] = useState('');
   const [currentUser] = useState({
     name: localStorage.getItem('userName') || 'Anonymous',
-    avatar: 'https://placeholder.com/40x40',
+    avatar: avatar,
   });
 
-  const computeReadTime = (content) => {
-    const text = content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-    const words = text.split(' ').filter((word) => word.length > 0);
-    const count = words.length;
-    const minutes = Math.ceil(count / 200);
-    return `${minutes} min read`;
-  };
+  // const computeReadTime = (content) => {
+  //   const text = content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  //   const words = text.split(' ').filter((word) => word.length > 0);
+  //   const count = words.length;
+  //   const minutes = Math.ceil(count / 200);
+  //   return `${minutes} min read`;
+  // };
 
-  // Fetch article and comments on mount
   useEffect(() => {
     const fetchArticle = async () => {
       setIsLoading(true);
       try {
-        // Get the article from navigation state
         const passedArticle = location.state?.article;
-
         if (passedArticle) {
           setArticle(passedArticle);
           setUserLike(false);
           setUserBookmark(false);
         }
 
-        // Fetch comments
         const commentsResponse = await axios.get(
           `${BASEURL}/comments/blog/${articleId}?page=0&size=5`,
           {
@@ -237,7 +236,9 @@ const ArticleDetail = () => {
 
         <div className="article-detail-meta">
           <div className="author-info">
-            <div className="author-avatar"></div>
+            <div className="author-avatar">
+            <img src={avatar} alt="Author Avatar" />
+            </div>
             <div>
               <p className="author-name">{article.author}</p>
               <p className="article-publication">
@@ -314,7 +315,7 @@ const ArticleDetail = () => {
         <h2 className="article-detail-subtitle">{article.subtitle}</h2>
 
         <div className="article-featured-image">
-          <img src={article.image} alt={article.title} />
+          <img src={article.image || techImg} alt={article.title} />
         </div>
 
         <div className="article-body" dangerouslySetInnerHTML={{ __html: article.content }}></div>
