@@ -2,6 +2,7 @@ package com.dailydiaries.controller;
 
 import com.dailydiaries.entity.LoginDTO;
 import com.dailydiaries.entity.User;
+import com.dailydiaries.entity.UserProfileResponse;
 import com.dailydiaries.service.BlogResponse;
 import com.dailydiaries.service.UserService;
 import org.slf4j.Logger;
@@ -87,6 +88,20 @@ public class UserController {
         Pageable pageable = PageRequest.of(page, size);
         Page<BlogResponse> savedBlogs = userService.getSavedBlogs(userId, pageable);
         return ResponseEntity.ok(savedBlogs);
+    }
+
+    @GetMapping
+    public ResponseEntity<Page<UserProfileResponse>> getUserProfiles(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        logger.debug("Received GET /api/v2/users?page={}&size={}", page, size);
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok(userService.getUserProfiles(pageable));
+    }
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<UserProfileResponse> getUserProfileById(@PathVariable Long userId) {
+        return ResponseEntity.ok(userService.getUserProfileById(userId));
     }
 }
 

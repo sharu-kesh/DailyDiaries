@@ -80,4 +80,9 @@ public class BlogService {
                 .collect(Collectors.toList());
         return new PageImpl<>(blogResponses, pageable, blogs.getTotalElements());
     }
+
+    public long getBlogCountByUserId(Long userId) {
+        logger.debug("Fetching Blog count for UserId: {}", userId);
+        return blogRepository.countByUserId(userId);
+    }
 }

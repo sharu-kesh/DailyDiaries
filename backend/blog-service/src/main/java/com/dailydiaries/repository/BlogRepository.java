@@ -9,4 +9,5 @@ import java.util.List;
 
 public interface BlogRepository extends JpaRepository<Blog, Long> {
     Page<Blog> findByUserIdIn(List<Long> userIds, Pageable pageable);
+    Long countByUserId(Long userId);
 }

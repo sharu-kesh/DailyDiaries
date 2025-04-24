@@ -3,6 +3,7 @@ package com.dailydiaries.service;
 import com.dailydiaries.entity.Blog;
 import com.dailydiaries.entity.LoginDTO;
 import com.dailydiaries.entity.User;
+import com.dailydiaries.entity.UserProfileResponse;
 import com.dailydiaries.repository.UserRepository;
 import io.jsonwebtoken.Jwts;
 import org.slf4j.Logger;
@@ -130,7 +131,6 @@ public class UserService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         }
 
-        // Corrected SQL query with proper parameter binding
         String sql_saved_blogs = """
             SELECT b.id, b.content, b.created_at, b.like_count, b.subtitle, b.title, b.title_image, b.user_id, u.username
             FROM saved_blogs sb
@@ -163,5 +163,105 @@ public class UserService {
         Long total = jdbcTemplate.queryForObject(countSql, new Object[]{userId}, Long.class);
 
         return new PageImpl<>(blogResponses, pageable, total != null ? total : 0);
+    }
+
+    public Page<UserProfileResponse> getUserProfiles(Pageable pageable) {
+        logger.debug("Fetching user profiles with pagination");
+
+        String sql = """
+            SELECT 
+                u.id, 
+                u.username, 
+                u.bio, 
+                COALESCE(b.blogs_count, 0) AS blogs_count,
+                COALESCE(f1.followers_count, 0) AS followers_count,
+                COALESCE(f2.followings_count, 0) AS followings_count
+            FROM users u
+            LEFT JOIN (
+                SELECT user_id, COUNT(*) AS blogs_count 
+                FROM blogs 
+                GROUP BY user_id
+            ) b ON b.user_id = u.id
+            LEFT JOIN (
+                SELECT followed_id, COUNT(*) AS followers_count 
+                FROM followers 
+                GROUP BY followed_id
+            ) f1 ON f1.followed_id = u.id
+            LEFT JOIN (
+                SELECT follower_id, COUNT(*) AS followings_count 
+                FROM followers 
+                GROUP BY follower_id
+            ) f2 ON f2.follower_id = u.id
+            ORDER BY u.id
+            LIMIT ? OFFSET ?
+        """;
+
+        // Query with RowMapper for mapping to UserProfileResponse
+        List<UserProfileResponse> userProfiles = jdbcTemplate.query(
+                sql,
+                new Object[]{pageable.getPageSize(), pageable.getOffset()},
+                (rs, rowNum) -> new UserProfileResponse(
+                        rs.getLong("id"),
+                        rs.getString("username"),
+                        rs.getString("bio"),
+                        rs.getLong("blogs_count"),
+                        rs.getLong("followers_count"),
+                        rs.getLong("followings_count")
+                )
+        );
+
+        // Count query for total elements
+        String countSql = "SELECT COUNT(*) FROM users";
+        Long total = jdbcTemplate.queryForObject(countSql, Long.class);
+
+        return new PageImpl<>(userProfiles, pageable, total != null ? total : 0);
+    }
+
+    public UserProfileResponse getUserProfileById(Long userId) {
+        logger.debug("Fetching user profile for user {}", userId);
+        if (!userRepository.existsById(userId)) {
+            logger.warn("User not found for id: {}", userId);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+        }
+
+        String sql = """
+            SELECT 
+                u.id, 
+                u.username, 
+                u.bio, 
+                COALESCE(b.blogs_count, 0) AS blogs_count,
+                COALESCE(f1.followers_count, 0) AS followers_count,
+                COALESCE(f2.followings_count, 0) AS followings_count
+            FROM users u
+            LEFT JOIN (
+                SELECT user_id, COUNT(*) AS blogs_count 
+                FROM blogs 
+                GROUP BY user_id
+            ) b ON b.user_id = u.id
+            LEFT JOIN (
+                SELECT followed_id, COUNT(*) AS followers_count 
+                FROM followers 
+                GROUP BY followed_id
+            ) f1 ON f1.followed_id = u.id
+            LEFT JOIN (
+                SELECT follower_id, COUNT(*) AS followings_count 
+                FROM followers 
+                GROUP BY follower_id
+            ) f2 ON f2.follower_id = u.id
+            WHERE u.id = ?
+        """;
+
+        return jdbcTemplate.queryForObject(
+                sql,
+                new Object[]{userId},
+                (rs, rowNum) -> new UserProfileResponse(
+                        rs.getLong("id"),
+                        rs.getString("username"),
+                        rs.getString("bio"),
+                        rs.getLong("blogs_count"),
+                        rs.getLong("followers_count"),
+                        rs.getLong("followings_count")
+                )
+        );
     }
 }

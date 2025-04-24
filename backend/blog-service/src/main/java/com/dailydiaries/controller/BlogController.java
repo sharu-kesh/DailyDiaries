@@ -58,4 +58,12 @@ public class BlogController {
         blogService.deleteBlog(id, userId);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/{userId}/getBlogsCount")
+    public ResponseEntity<Long> getBlogsCount(
+            @PathVariable Long userId) {
+        logger.debug("Received GET /{}/getBlogsCount", userId);
+        Long commentCount = blogService.getBlogCountByUserId(userId);
+        return ResponseEntity.ok(commentCount);
+    }
 }
