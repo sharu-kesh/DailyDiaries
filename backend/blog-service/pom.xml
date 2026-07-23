@@ -5,10 +5,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.dailydiaries</groupId>
-    <artifactId>feed-service</artifactId>
+    <artifactId>blog-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>feed-service</name>
-    <description>Feed Service for Daily Diaries</description>
+    <name>blog-service</name>
+    <description>Blog Service for Daily Diaries</description>
 
     <properties>
         <java.version>21</java.version>
