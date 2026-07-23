@@ -21,6 +21,6 @@ java -XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xss256k -XX:ReservedCodeCacheSize
 echo "Waiting for services to bootstrap..."
 sleep 15
 
-echo "Starting API Gateway on port ${PORT:-8080}..."
-# Start api-gateway in the foreground using the dynamic port allocated by Render
-java -XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xss256k -XX:ReservedCodeCacheSize=16m -XX:CICompilerCount=1 -XX:MaxMetaspaceSize=40m -Xms32m -Xmx48m -jar api-gateway.jar --server.port=${PORT:-8080}
+echo "Starting API Gateway on port 8080..."
+# Start api-gateway in the foreground on port 8080 (matching Dockerfile EXPOSE)
+java -XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xss256k -XX:ReservedCodeCacheSize=16m -XX:CICompilerCount=1 -XX:MaxMetaspaceSize=40m -Xms32m -Xmx48m -jar api-gateway.jar
