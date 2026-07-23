@@ -17,10 +17,10 @@ public class Blog {
 
     private String subtitle;
 
-    @Column(name = "title_image")
+    @Column(name = "title_image", columnDefinition = "TEXT")
     private String titleImage;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
     @Column(name = "user_id", nullable = false)

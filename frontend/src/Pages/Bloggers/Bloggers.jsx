@@ -38,7 +38,9 @@ const Bloggers = () => {
         }
 
         const users = response.data.content || response.data || [];
-        const mappedBloggers = users.map((user) => ({
+        const currentUserId = parseInt(userId);
+        const filteredUsers = users.filter((user) => user.id !== currentUserId);
+        const mappedBloggers = filteredUsers.map((user) => ({
           id: user.id,
           name: user.username,
           profilePhoto: avatar,
@@ -49,7 +51,11 @@ const Bloggers = () => {
           isFollowing: false,
         }));
 
-        setBloggers((prev) => [...prev, ...mappedBloggers]);
+        setBloggers((prev) => {
+          const ids = new Set(prev.map((b) => b.id));
+          const newItems = mappedBloggers.filter((b) => !ids.has(b.id));
+          return [...prev, ...newItems];
+        });
         setHasMore(users.length > 0 && response.data.pageable.pageNumber < response.data.totalPages - 1);
         setPage((prev) => prev + 1);
       } catch (err) {
@@ -110,7 +116,9 @@ const Bloggers = () => {
       }
 
       const users = response.data.content || response.data || [];
-      const mappedBloggers = users.map((user) => ({
+      const currentUserId = parseInt(userId);
+      const filteredUsers = users.filter((user) => user.id !== currentUserId);
+      const mappedBloggers = filteredUsers.map((user) => ({
         id: user.id,
         name: user.username,
         profilePhoto: avatar,
@@ -121,7 +129,11 @@ const Bloggers = () => {
         isFollowing: false,
       }));
 
-      setBloggers((prev) => [...prev, ...mappedBloggers]);
+      setBloggers((prev) => {
+        const ids = new Set(prev.map((b) => b.id));
+        const newItems = mappedBloggers.filter((b) => !ids.has(b.id));
+        return [...prev, ...newItems];
+      });
       setHasMore(users.length > 0 && response.data.pageable.pageNumber < response.data.totalPages - 1);
       setPage((prev) => prev + 1);
     } catch (err) {
