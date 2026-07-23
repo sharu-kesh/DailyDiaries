@@ -21,8 +21,8 @@ COPY --from=builder /app/feed-service/target/*.jar feed-service.jar
 COPY start.sh start.sh
 RUN chmod +x start.sh
 
-# Hugging Face Spaces expects the container to expose port 7860
-EXPOSE 7860
+# Expose the API Gateway port
+EXPOSE 8080
 
 # Run all services
 ENTRYPOINT ["./start.sh"]
