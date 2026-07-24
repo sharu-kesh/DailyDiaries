@@ -8,6 +8,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v2/feed")
 public class FeedController {
@@ -62,5 +64,13 @@ public class FeedController {
         logger.debug("Received GET /getFollowings for userId: {}", userId);
         Long followingsCount = feedService.getFollowingCount(userId);
         return ResponseEntity.ok(followingsCount);
+    }
+
+    @GetMapping("/followed-ids")
+    public ResponseEntity<List<Long>> getFollowedUserIds(
+            @RequestHeader("X-Auth-User-Id") Long userId) {
+        logger.debug("Received GET /api/v2/feed/followed-ids for userId: {}", userId);
+        List<Long> followedIds = feedService.getFollowedUserIds(userId);
+        return ResponseEntity.ok(followedIds);
     }
 }

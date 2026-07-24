@@ -12,6 +12,7 @@ const Bloggers = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const loadingRef = useRef(null);
+  const followedIdsRef = useRef([]);
 
   // Fetch initial bloggers from API
   useEffect(() => {
@@ -25,6 +26,22 @@ const Bloggers = () => {
 
       setIsLoading(true);
       try {
+        // 1. Fetch followed IDs first to check active follow status
+        let followedIds = [];
+        try {
+          const followedResponse = await axios.get(`${BASEURL}/feed/followed-ids`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'X-Auth-User-Id': userId,
+            },
+          });
+          followedIds = followedResponse.data || [];
+          followedIdsRef.current = followedIds;
+        } catch (e) {
+          console.error('Error fetching followed user IDs:', e);
+        }
+
+        // 2. Fetch bloggers
         const response = await axios.get(`${BASEURL}/users?page=${page}&size=2`, {
           headers: {
             'Content-Type': 'application/json',
@@ -48,7 +65,7 @@ const Bloggers = () => {
           followers: user.followersCount || 0,
           blogs: user.blogsCount || 0,
           followings: user.followingsCount || 0,
-          isFollowing: false,
+          isFollowing: followedIds.includes(user.id),
         }));
 
         setBloggers((prev) => {
@@ -126,7 +143,7 @@ const Bloggers = () => {
         followers: user.followersCount || 0,
         blogs: user.blogsCount || 0,
         followings: user.followingsCount || 0,
-        isFollowing: false,
+        isFollowing: followedIdsRef.current.includes(user.id),
       }));
 
       setBloggers((prev) => {

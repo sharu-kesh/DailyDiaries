@@ -146,4 +146,11 @@ public class FeedService {
         logger.debug("Fetching followers count for user: {}", userId);
         return followerRepository.countByFollowedId(userId);
     }
+
+    public List<Long> getFollowedUserIds(Long userId) {
+        logger.debug("Fetching followed user IDs for user: {}", userId);
+        return followerRepository.findByFollowerId(userId).stream()
+                .map(Follower::getFollowedId)
+                .collect(Collectors.toList());
+    }
 }
