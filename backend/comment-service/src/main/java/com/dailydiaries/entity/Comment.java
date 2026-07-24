@@ -16,4 +16,9 @@ public class Comment {
     @Column(name = "user_id")
     private Long userId;
     private String content;
+    @Column(name = "created_at")
+    private java.time.LocalDateTime createdAt;
+
+    @Transient
+    private String username;
 }
